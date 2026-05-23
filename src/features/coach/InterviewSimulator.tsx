@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, MicOff, ChevronRight, Award, RefreshCw, ArrowRight, Lightbulb, Play } from 'lucide-react'
+import { Mic, MicOff, ChevronRight, Award, RefreshCw, ArrowRight, Lightbulb, Play, Volume2, VolumeX, RotateCcw as Replay } from 'lucide-react'
 import type { InterviewQuestion, InterviewAnswer, InterviewSession } from '@/types'
 import styles from './InterviewSimulator.module.css'
 
@@ -80,6 +80,8 @@ function ScoreRing({ score, color, size = 100 }: { score: number; color: string;
 }
 
 export default function InterviewSimulator({ targetCareer, profile, onRestart, provider = 'anthropic', modelId = 'claude-sonnet-4-6' }: Props) {
+  const isGenericCareer = !targetCareer || targetCareer === 'le poste visé'
+  const [careerInput, setCareerInput] = useState('')
   const [session, setSession] = useState<InterviewSession>({
     questions: [], answers: [], currentQuestionIndex: 0, status: 'idle',
   })
@@ -91,9 +93,23 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
   const [loadingMsg, setLoadingMsg] = useState('')
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
 
+  const activeCareer = isGenericCareer ? (careerInput.trim() || 'Développeur Web') : targetCareer
+  const [isRecruiterSpeaking, setIsRecruiterSpeaking] = useState(false)
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const currentQId = session.questions[session.currentQuestionIndex]?.id
+
   useEffect(() => {
     const SR = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null
     if (!SR) setSpeechSupported(false)
+  }, [])
+
+  // Cleanup TTS on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+    }
   }, [])
 
   const startInterview = async () => {
@@ -103,7 +119,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
       const res = await fetch('/api/interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate_questions', career: targetCareer, profile, provider, modelId }),
+        body: JSON.stringify({ action: 'generate_questions', career: activeCareer, profile, provider, modelId }),
       })
       const data = await res.json()
       setSession((s) => ({ ...s, questions: data.questions, currentQuestionIndex: 0, answers: [], status: 'questioning' }))
@@ -142,6 +158,53 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
     setSession((s) => ({ ...s, status: 'questioning' }))
   }
 
+  const speakQuestion = useCallback((text: string, autoListen = true) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'fr-FR'
+    utterance.rate = 0.88
+    utterance.pitch = 1.05
+
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const frVoice = voices.find((v) => v.lang.startsWith('fr') && !v.name.includes('Google')) ||
+                      voices.find((v) => v.lang.startsWith('fr')) ||
+                      voices[0]
+      if (frVoice) utterance.voice = frVoice
+
+      setIsRecruiterSpeaking(true)
+      utterance.onend = () => {
+        setIsRecruiterSpeaking(false)
+        if (autoListen && speechSupported) startListening()
+      }
+      utterance.onerror = () => setIsRecruiterSpeaking(false)
+      window.speechSynthesis.speak(utterance)
+    }
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true })
+    } else {
+      doSpeak()
+    }
+  }, [speechSupported, startListening])
+
+  const stopRecruiterSpeaking = () => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+    }
+    setIsRecruiterSpeaking(false)
+  }
+
+  // Auto-speak each new question
+  useEffect(() => {
+    if (!currentQId || session.status !== 'questioning' || !voiceEnabled) return
+    const q = session.questions[session.currentQuestionIndex]
+    if (q) speakQuestion(q.question)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQId])
+
   const submitAnswer = async () => {
     const currentQ = session.questions[session.currentQuestionIndex]
     if (!currentQ || !transcript.trim()) return
@@ -151,7 +214,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
       const res = await fetch('/api/interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'evaluate_answer', career: targetCareer, question: currentQ, answer: transcript, provider, modelId }),
+        body: JSON.stringify({ action: 'evaluate_answer', career: activeCareer, question: currentQ, answer: transcript, provider, modelId }),
       })
       const data = await res.json()
       const newAnswers = [...session.answers, data.evaluation]
@@ -161,7 +224,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
         const finalRes = await fetch('/api/interview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'final_feedback', career: targetCareer, answers: newAnswers, provider, modelId }),
+          body: JSON.stringify({ action: 'final_feedback', career: activeCareer, answers: newAnswers, provider, modelId }),
         })
         const finalData = await finalRes.json()
         setFinalResult(finalData)
@@ -194,8 +257,28 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
           Entretien <span className="gradient-text">simulé</span>
         </h2>
         <p className={styles.headerSubtext}>
-          Poste visé : <span style={{ color: '#a78bfa' }}>{targetCareer}</span>
+          Poste visé : <span style={{ color: '#a78bfa' }}>{activeCareer}</span>
         </p>
+        {isGenericCareer && session.status === 'idle' && (
+          <input
+            type="text"
+            value={careerInput}
+            onChange={(e) => setCareerInput(e.target.value)}
+            placeholder="Quel poste vises-tu ? (ex: Développeur Web, Data Analyst…)"
+            style={{
+              marginTop: '0.75rem',
+              width: '100%',
+              padding: '0.625rem 0.875rem',
+              borderRadius: '0.75rem',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text)',
+              fontSize: '0.8125rem',
+              outline: 'none',
+              boxSizing: 'border-box' as const,
+            }}
+          />
+        )}
       </motion.div>
 
       {/* IDLE */}
@@ -291,15 +374,67 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
 
             {/* Question card */}
             <div className={styles.questionCard}>
-              <p className={styles.questionText}>{currentQ.question}</p>
-              <button
-                onClick={() => setShowHint((v) => !v)}
-                className={styles.hintBtn}
-                style={{ color: showHint ? '#fbbf24' : 'var(--text-4)' }}
-              >
-                <Lightbulb size={12} />
-                {showHint ? 'Masquer le conseil' : 'Voir un conseil'}
-              </button>
+              {/* Recruiter speaking indicator */}
+              {isRecruiterSpeaking ? (
+                <div className={styles.recruiterSpeaking}>
+                  <div className={styles.recruiterAvatar}>
+                    <Volume2 size={13} style={{ color: '#60a5fa' }} />
+                  </div>
+                  <div className={styles.recruiterInfo}>
+                    <span className={styles.recruiterLabel}>Le recruteur parle…</span>
+                    <div className={styles.recruiterWave}>
+                      {[0,1,2,3,4,5].map((i) => (
+                        <motion.div
+                          key={i}
+                          className={styles.recruiterWaveBar}
+                          animate={{ height: ['4px', '18px', '4px'] }}
+                          transition={{ duration: 0.55, repeat: Infinity, delay: i * 0.08, ease: 'easeInOut' }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={stopRecruiterSpeaking} className={styles.voiceActionBtn} title="Passer">
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.questionVoiceRow}>
+                  <p className={styles.questionText} style={{ margin: 0, flex: 1 }}>{currentQ.question}</p>
+                  <div className={styles.voiceControls}>
+                    <button
+                      onClick={() => speakQuestion(currentQ.question, false)}
+                      className={styles.voiceActionBtn}
+                      title="Réécouter la question"
+                    >
+                      <Replay size={12} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setVoiceEnabled((v) => !v)
+                        if (isRecruiterSpeaking) stopRecruiterSpeaking()
+                      }}
+                      className={styles.voiceActionBtn}
+                      title={voiceEnabled ? 'Couper le son' : 'Activer le son'}
+                      style={{ color: voiceEnabled ? 'var(--text-3)' : '#ef4444' }}
+                    >
+                      {voiceEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!isRecruiterSpeaking && (
+                <>
+                  <button
+                    onClick={() => setShowHint((v) => !v)}
+                    className={styles.hintBtn}
+                    style={{ color: showHint ? '#fbbf24' : 'var(--text-4)', marginTop: '0.75rem' }}
+                  >
+                    <Lightbulb size={12} />
+                    {showHint ? 'Masquer le conseil' : 'Voir un conseil'}
+                  </button>
+                </>
+              )}
               <AnimatePresence>
                 {showHint && currentQ.hint && (
                   <motion.p
@@ -313,41 +448,47 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
               </AnimatePresence>
             </div>
 
-            {/* Recording zone */}
-            <div
-              className={styles.recordingZone}
-              style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: `1px solid ${isListening ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                boxShadow: isListening ? '0 0 0 4px rgba(239,68,68,0.06)' : 'none',
-              }}
-            >
-              {isListening && (
-                <div className={styles.recordingHeader}>
-                  <motion.div
-                    className={styles.recordingDot}
-                    animate={{ opacity: [1, 0.2, 1], scale: [1, 1.2, 1] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
-                  />
-                  <span className={styles.recordingLabel}>Enregistrement…</span>
-                  <div className={styles.recordingWave}>
-                    {[0,1,2,3,4].map((i) => (
-                      <motion.div key={i} className={styles.recordingBar}
-                        style={{ background: '#f87171' }}
-                        animate={{ height: ['3px', '14px', '3px'] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.09 }} />
-                    ))}
-                  </div>
-                </div>
+            {/* Recording zone — hidden while recruiter is speaking */}
+            <AnimatePresence>
+              {!isRecruiterSpeaking && (
+                <motion.div
+                  key="recording"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className={styles.recordingZone}
+                  style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${isListening ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                    boxShadow: isListening ? '0 0 0 4px rgba(239,68,68,0.06)' : 'none',
+                  }}
+                >
+                  {isListening && (
+                    <div className={styles.recordingHeader}>
+                      <motion.div
+                        className={styles.recordingDot}
+                        animate={{ opacity: [1, 0.2, 1], scale: [1, 1.2, 1] }}
+                        transition={{ duration: 0.8, repeat: Infinity }}
+                      />
+                      <span className={styles.recordingLabel}>Enregistrement…</span>
+                      <div className={styles.recordingWave}>
+                        {[0,1,2,3,4].map((i) => (
+                          <motion.div key={i} className={styles.recordingBar}
+                            style={{ background: '#f87171' }}
+                            animate={{ height: ['3px', '14px', '3px'] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.09 }} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {transcript ? (
+                    <p className={styles.transcriptText}>{transcript}</p>
+                  ) : (
+                    <p className={styles.transcriptPlaceholder}>
+                      {isListening ? "Parle maintenant, je t'écoute…" : 'Ta réponse apparaîtra ici'}
+                    </p>
+                  )}
+                </motion.div>
               )}
-              {transcript ? (
-                <p className={styles.transcriptText}>{transcript}</p>
-              ) : (
-                <p className={styles.transcriptPlaceholder}>
-                  {isListening ? "Parle maintenant, je t'écoute…" : 'Ta réponse apparaîtra ici'}
-                </p>
-              )}
-            </div>
+            </AnimatePresence>
 
             {/* Fallback textarea */}
             {!speechSupported && (
@@ -360,33 +501,35 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart, p
               />
             )}
 
-            {/* Controls */}
-            <div className={styles.controls}>
-              {speechSupported && (
+            {/* Controls — hidden while recruiter is speaking */}
+            {!isRecruiterSpeaking && (
+              <div className={styles.controls}>
+                {speechSupported && (
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={isListening ? stopListening : startListening}
+                    className={styles.micBtn}
+                    style={{
+                      background: isListening ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+                      border: `1px solid ${isListening ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.25)'}`,
+                      color: isListening ? '#f87171' : '#34d399',
+                    }}
+                  >
+                    {isListening
+                      ? <><motion.div animate={{ scale: [1,1.2,1] }} transition={{ duration: 0.6, repeat: Infinity }}><MicOff size={15}/></motion.div>Arrêter</>
+                      : <><Mic size={15}/>{transcript ? 'Réenregistrer' : 'Parler'}</>}
+                  </motion.button>
+                )}
                 <motion.button
                   whileTap={{ scale: 0.96 }}
-                  onClick={isListening ? stopListening : startListening}
-                  className={styles.micBtn}
-                  style={{
-                    background: isListening ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
-                    border: `1px solid ${isListening ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.25)'}`,
-                    color: isListening ? '#f87171' : '#34d399',
-                  }}
+                  onClick={submitAnswer}
+                  disabled={!transcript.trim()}
+                  className={`${styles.submitBtn} ${transcript.trim() ? styles.submitBtnActive : styles.submitBtnDisabled}`}
                 >
-                  {isListening
-                    ? <><motion.div animate={{ scale: [1,1.2,1] }} transition={{ duration: 0.6, repeat: Infinity }}><MicOff size={15}/></motion.div>Arrêter</>
-                    : <><Mic size={15}/>{transcript ? 'Réenregistrer' : 'Parler'}</>}
+                  <ChevronRight size={15} /> Soumettre
                 </motion.button>
-              )}
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                onClick={submitAnswer}
-                disabled={!transcript.trim()}
-                className={`${styles.submitBtn} ${transcript.trim() ? styles.submitBtnActive : styles.submitBtnDisabled}`}
-              >
-                <ChevronRight size={15} /> Soumettre
-              </motion.button>
-            </div>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       )}

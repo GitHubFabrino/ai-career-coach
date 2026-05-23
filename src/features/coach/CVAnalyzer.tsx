@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, CheckCircle, XCircle, AlertCircle, ArrowRight, Loader2, RotateCcw } from 'lucide-react'
+import { Upload, FileText, CheckCircle, XCircle, AlertCircle, ArrowRight, Loader2, RotateCcw, Wand2 } from 'lucide-react'
 import type { CVAnalysisResult } from '@/types'
+import type { CVImprovementResult } from '@/app/api/cv-improve/route'
 import styles from './CVAnalyzer.module.css'
 
 type Props = {
@@ -49,8 +50,14 @@ export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthro
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<CVAnalysisResult | null>(null)
+  const [cvText, setCvText] = useState<string>('')
+  const [careerInput, setCareerInput] = useState(targetCareer ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [improvement, setImprovement] = useState<CVImprovementResult | null>(null)
+  const [isImproving, setIsImproving] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const activeCareer = targetCareer || careerInput || undefined
 
   const handleFile = (f: File) => {
     if (!f.name.endsWith('.pdf') && !f.name.endsWith('.txt')) {
@@ -73,9 +80,10 @@ export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthro
     if (!file) return
     setIsLoading(true)
     setError(null)
+    setImprovement(null)
     const formData = new FormData()
     formData.append('cv', file)
-    if (targetCareer) formData.append('career', targetCareer)
+    if (activeCareer) formData.append('career', activeCareer)
     formData.append('provider', provider)
     formData.append('modelId', modelId)
     try {
@@ -83,10 +91,30 @@ export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthro
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erreur')
       setResult(data.result)
+      if (data.extractedText) setCvText(data.extractedText)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erreur inattendue')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleImprove = async () => {
+    if (!result || !cvText) return
+    setIsImproving(true)
+    try {
+      const res = await fetch('/api/cv-improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cvText, analysis: result, career: activeCareer, provider, modelId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur')
+      setImprovement(data)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erreur inattendue')
+    } finally {
+      setIsImproving(false)
     }
   }
 
@@ -108,10 +136,19 @@ export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthro
           Analyse ton <span className="gradient-text-gold">CV</span>
         </h2>
         <p className={styles.headerSubtext}>
-          {targetCareer
-            ? `Optimisé pour : ${targetCareer}`
+          {activeCareer
+            ? `Optimisé pour : ${activeCareer}`
             : 'Détection des compétences · Score global · Feedback personnalisé'}
         </p>
+        {!targetCareer && !result && (
+          <input
+            type="text"
+            value={careerInput}
+            onChange={(e) => setCareerInput(e.target.value)}
+            placeholder="Poste visé (ex: Développeur Web, Data Analyst…)"
+            className={styles.careerInput}
+          />
+        )}
       </motion.div>
 
       {/* Upload zone */}
@@ -330,10 +367,72 @@ export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthro
               </div>
             )}
 
+            {/* Improve button */}
+            {!improvement && (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleImprove}
+                disabled={isImproving}
+                className={`${styles.analyzeBtn} ${!isImproving ? styles.analyzeBtnActive : styles.analyzeBtnDisabled}`}
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', border: 'none' }}
+              >
+                {isImproving
+                  ? <><Loader2 size={15} className={styles.spin} /> Génération des améliorations…</>
+                  : <><Wand2 size={15} /> Améliorer mon CV avec l&apos;IA</>}
+              </motion.button>
+            )}
+
+            {/* Improvement results */}
+            {improvement && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={styles.improvementSection}
+              >
+                <div className={styles.improvementHeader}>
+                  <Wand2 size={14} style={{ color: '#a78bfa' }} />
+                  <h3 className={styles.improvementTitle}>Suggestions de réécriture</h3>
+                </div>
+
+                {improvement.improvements.map((item, i) => (
+                  <div key={i} className={styles.improvementCard}>
+                    <div className={styles.improvementMeta}>
+                      <span className={styles.improvementSectionLabel}>{item.section}</span>
+                      <span className={styles.improvementIssue}>{item.issue}</span>
+                    </div>
+                    <div className={styles.improvementRewritten}>
+                      <p className={styles.improvementRewrittenLabel}>Suggestion :</p>
+                      <p className={styles.improvementRewrittenText}>{item.rewritten}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {improvement.globalAdvice.length > 0 && (
+                  <div className={styles.globalAdviceCard}>
+                    <h4 className={styles.globalAdviceTitle}>Conseils globaux</h4>
+                    {improvement.globalAdvice.map((tip, i) => (
+                      <div key={i} className={styles.globalAdviceItem}>
+                        <span className={styles.improvementNum}>{i + 1}.</span>
+                        {tip}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setImprovement(null)}
+                  className={styles.restartBtn}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  <RotateCcw size={13} /> Régénérer
+                </button>
+              </motion.div>
+            )}
+
             {/* Actions */}
             <div className={styles.actions}>
               <button
-                onClick={() => { setResult(null); setFile(null) }}
+                onClick={() => { setResult(null); setFile(null); setImprovement(null) }}
                 className={styles.retryBtn}
               >
                 <RotateCcw size={13} /> Analyser un autre CV

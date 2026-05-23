@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, ArrowLeft, Brain, FileText, Mic, Map, Briefcase, MessageSquare, RotateCcw } from 'lucide-react'
+import { Send, ArrowLeft, Brain, FileText, Mic, Map, Briefcase, MessageSquare, RotateCcw, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCoachStore } from '@/store/coach-store'
 import ChatMessage from '@/features/coach/ChatMessage'
@@ -12,6 +12,7 @@ import CareerCard from '@/features/coach/CareerCard'
 import ActionPlanView from '@/features/coach/ActionPlanView'
 import CVAnalyzer from '@/features/coach/CVAnalyzer'
 import InterviewSimulator from '@/features/coach/InterviewSimulator'
+import JobOffers from '@/features/coach/JobOffers'
 import LLMSelector from '@/features/coach/LLMSelector'
 import type { Message } from '@/types'
 import styles from './page.module.css'
@@ -21,7 +22,7 @@ const HeroScene = dynamic(() => import('@/components/3d/HeroScene'), {
   loading: () => <div />,
 })
 
-type AppPhase = 'chat' | 'careers' | 'plan' | 'cv' | 'entretien'
+type AppPhase = 'chat' | 'careers' | 'plan' | 'cv' | 'entretien' | 'offres'
 
 function makeInitialMessage(): Message {
   return {
@@ -39,6 +40,7 @@ const phaseNavItems: { id: AppPhase; label: string; icon: typeof MessageSquare; 
   { id: 'plan',      label: 'Plan',        icon: Map,           color: '#34d399' },
   { id: 'cv',        label: 'Analyse CV',  icon: FileText,      color: '#fbbf24' },
   { id: 'entretien', label: 'Entretien',   icon: Mic,           color: '#f87171' },
+  { id: 'offres',    label: 'Offres',      icon: Search,        color: '#60a5fa' },
 ]
 
 export default function CoachPage() {
@@ -154,7 +156,7 @@ export default function CoachPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
-  const hasResults = phase !== 'chat' && phase !== 'careers'
+  const hasResults = true
   const hasCareer = !!selectedCareer || !!actionPlan
   const progress = Math.min((dataPoints / 28) * 100, 100)
 
@@ -162,7 +164,7 @@ export default function CoachPage() {
     if (item.id === 'chat') return true
     if (item.id === 'careers') return careers.length > 0 || phase === 'careers'
     if (item.id === 'plan') return !!actionPlan
-    if (item.id === 'cv' || item.id === 'entretien') return hasCareer
+    if (item.id === 'cv' || item.id === 'entretien' || item.id === 'offres') return true
     return false
   })
 
@@ -233,8 +235,9 @@ export default function CoachPage() {
               <p className={styles.sidebarSectionLabel}>Outils</p>
               <div className={styles.navList}>
                 {[
-                  { id: 'cv' as AppPhase, label: 'Analyser mon CV', icon: FileText, color: '#fbbf24', activeBg: 'rgba(245,158,11,0.1)', activeBorder: 'rgba(245,158,11,0.2)' },
-                  { id: 'entretien' as AppPhase, label: 'Simuler un entretien', icon: Mic, color: '#34d399', activeBg: 'rgba(16,185,129,0.1)', activeBorder: 'rgba(16,185,129,0.2)' },
+                  { id: 'cv' as AppPhase,        label: 'Analyser mon CV',      icon: FileText, color: '#fbbf24', activeBg: 'rgba(245,158,11,0.1)',   activeBorder: 'rgba(245,158,11,0.2)'   },
+                  { id: 'entretien' as AppPhase, label: 'Simuler un entretien', icon: Mic,      color: '#34d399', activeBg: 'rgba(16,185,129,0.1)',  activeBorder: 'rgba(16,185,129,0.2)'  },
+                  { id: 'offres' as AppPhase,    label: 'Offres d\'emploi',     icon: Search,   color: '#60a5fa', activeBg: 'rgba(96,165,250,0.1)',  activeBorder: 'rgba(96,165,250,0.2)'  },
                 ].map((tool) => (
                   <button
                     key={tool.id}
@@ -454,6 +457,16 @@ export default function CoachPage() {
                 />
               </motion.div>
             )}
+
+            {/* Job offers */}
+            {phase === 'offres' && (
+              <motion.div key="offres" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <JobOffers
+                  targetCareer={selectedCareer?.title || actionPlan?.careerTitle}
+                  onRestart={handleRestart}
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
@@ -521,6 +534,17 @@ export default function CoachPage() {
               }}
             >
               <Mic size={13} /> Entretien
+            </button>
+            <button
+              onClick={() => setPhase('offres')}
+              className={styles.mobileToolBtn}
+              style={{
+                background: phase === 'offres' ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.04)',
+                border: phase === 'offres' ? '1px solid rgba(96,165,250,0.25)' : '1px solid rgba(255,255,255,0.07)',
+                color: phase === 'offres' ? '#60a5fa' : 'var(--text-3)',
+              }}
+            >
+              <Search size={13} /> Offres
             </button>
           </div>
         )}

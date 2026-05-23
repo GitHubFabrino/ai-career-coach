@@ -81,7 +81,7 @@ Règles :
     }
 
     const result: CVAnalysisResult = JSON.parse(jsonMatch[0])
-    return NextResponse.json({ result })
+    return NextResponse.json({ result, extractedText: extractedText.slice(0, 4000) })
   } catch (err) {
     console.error('[cv-analyze]', err)
     return NextResponse.json(

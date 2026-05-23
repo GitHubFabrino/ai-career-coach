@@ -478,3 +478,129 @@
 
 .retryBtn:hover   { opacity: 0.8; }
 .restartBtn:hover { opacity: 0.7; }
+
+/* ════════════════════════════════════════
+   CAREER INPUT
+════════════════════════════════════════ */
+.careerInput {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.careerInput:focus {
+  border-color: rgba(167,139,250,0.4);
+}
+
+.careerInput::placeholder {
+  color: var(--text-4);
+}
+
+/* ════════════════════════════════════════
+   IMPROVEMENT SECTION
+════════════════════════════════════════ */
+.improvementSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.improvementHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.improvementTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: white;
+  font-family: var(--font-display);
+}
+
+.improvementCard {
+  padding: 1rem;
+  border-radius: 0.875rem;
+  background: rgba(124,58,237,0.06);
+  border: 1px solid rgba(124,58,237,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.improvementMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.improvementSectionLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #a78bfa;
+}
+
+.improvementIssue {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.improvementRewritten {
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.improvementRewrittenLabel {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-4);
+  margin-bottom: 0.375rem;
+}
+
+.improvementRewrittenText {
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+.globalAdviceCard {
+  padding: 1rem;
+  border-radius: 0.875rem;
+  background: rgba(16,185,129,0.05);
+  border: 1px solid rgba(16,185,129,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.globalAdviceTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #34d399;
+  margin-bottom: 0.25rem;
+}
+
+.globalAdviceItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--text-2);
+}
