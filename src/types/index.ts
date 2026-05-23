@@ -89,3 +89,41 @@ export type SkillGap = {
   targetLevel: 'intermediate' | 'advanced' | 'expert'
   resources: string[]
 }
+
+export type CVAnalysisResult = {
+  detectedSkills: string[]
+  missingSkills: string[]
+  globalScore: number
+  sections: {
+    label: string
+    score: number
+    feedback: string
+  }[]
+  strengths: string[]
+  improvements: string[]
+  summary: string
+}
+
+export type InterviewQuestion = {
+  id: string
+  question: string
+  category: 'motivation' | 'technique' | 'comportemental' | 'situationnel'
+  hint?: string
+}
+
+export type InterviewAnswer = {
+  questionId: string
+  transcript: string
+  score: number
+  feedback: string
+  tips: string[]
+}
+
+export type InterviewSession = {
+  questions: InterviewQuestion[]
+  answers: InterviewAnswer[]
+  currentQuestionIndex: number
+  status: 'idle' | 'questioning' | 'listening' | 'evaluating' | 'done'
+  finalScore?: number
+  finalFeedback?: string
+}
