@@ -13,23 +13,23 @@ const HeroScene = dynamic(() => import('@/components/3d/HeroScene'), {
 const features = [
   {
     icon: Brain,
-    title: 'AI-Powered Analysis',
-    desc: 'ReAct agent analyzes your profile with deep insight',
+    title: 'Analyse IA profonde',
+    desc: 'Un agent ReAct analyse ton profil avec une précision chirurgicale',
   },
   {
     icon: Target,
-    title: 'Career Matching',
-    desc: 'Get 3 personalized career paths with match scores',
+    title: 'Métiers sur mesure',
+    desc: '3 parcours personnalisés avec un score de compatibilité',
   },
   {
     icon: Zap,
-    title: 'Instant Roadmap',
-    desc: 'Receive a step-by-step action plan tailored to you',
+    title: 'Feuille de route instantanée',
+    desc: 'Un plan d\'action étape par étape adapté à ta réalité',
   },
   {
     icon: Sparkles,
-    title: 'Skill Gap Analysis',
-    desc: 'Know exactly what to learn and where to start',
+    title: 'Analyse des lacunes',
+    desc: 'Sache exactement quoi apprendre et par où commencer',
   },
 ]
 
@@ -62,7 +62,7 @@ export default function LandingPage() {
           >
             <Brain size={16} className="text-white" />
           </div>
-          <span className="font-semibold text-white">AI Career Coach</span>
+          <span className="font-semibold text-white">Coach Carrière IA</span>
         </motion.div>
 
         <motion.button
@@ -75,7 +75,7 @@ export default function LandingPage() {
             border: '1px solid rgba(124,58,237,0.4)',
           }}
         >
-          Get Started
+          Commencer
         </motion.button>
       </nav>
 
@@ -92,7 +92,7 @@ export default function LandingPage() {
           }}
         >
           <Sparkles size={14} />
-          Powered by Claude AI — ReAct Agent
+          Propulsé par Claude AI — Agent ReAct
         </motion.div>
 
         <motion.h1
@@ -102,9 +102,9 @@ export default function LandingPage() {
           className="text-6xl md:text-8xl font-bold leading-none tracking-tight mb-6"
           style={{ maxWidth: 900 }}
         >
-          <span className="text-white">Discover your</span>
+          <span className="text-white">Découvre ta</span>
           <br />
-          <span className="glow-text">ideal career</span>
+          <span className="glow-text">voie idéale</span>
         </motion.h1>
 
         <motion.p
@@ -114,9 +114,9 @@ export default function LandingPage() {
           className="text-lg md:text-xl mb-12 max-w-xl leading-relaxed"
           style={{ color: '#94a3b8' }}
         >
-          An immersive AI experience that understands your unique profile,
-          suggests the perfect career paths, and builds your personal roadmap —
-          in minutes.
+          Une expérience IA immersive qui comprend ton profil unique,
+          te propose les meilleurs parcours professionnels et construit
+          ta feuille de route personnelle — en quelques minutes.
         </motion.p>
 
         <motion.button
@@ -133,7 +133,7 @@ export default function LandingPage() {
             boxShadow: '0 0 40px rgba(124,58,237,0.4)',
           }}
         >
-          Start your journey
+          Commencer mon parcours
           <ArrowRight size={20} />
         </motion.button>
 
@@ -144,7 +144,7 @@ export default function LandingPage() {
           className="mt-4 text-sm"
           style={{ color: '#475569' }}
         >
-          Free · No signup required · Takes 5 minutes
+          Gratuit · Sans inscription · 5 minutes suffisent
         </motion.p>
       </div>
 

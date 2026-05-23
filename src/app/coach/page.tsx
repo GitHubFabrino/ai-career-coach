@@ -22,7 +22,7 @@ function makeInitialMessage(): Message {
     id: 'init-' + Math.random().toString(36).slice(2),
     role: 'assistant',
     content:
-      "Hello! I'm your AI Career Coach. I'm here to help you discover the career path that truly fits who you are.\n\nLet's start with something simple — what's your name?",
+      "Bonjour ! Je suis ton Coach Carrière IA. Je suis là pour t'aider à découvrir le parcours professionnel qui te correspond vraiment.\n\nCommençons par quelque chose de simple — comment tu t'appelles ?",
     timestamp: new Date(),
   }
 }
@@ -39,6 +39,7 @@ export default function CoachPage() {
     setCareers,
     selectCareer,
     setActionPlan,
+    setBlockerAnalysis,
     setIsAnalyzing,
     reset,
   } = useCoachStore()
@@ -93,6 +94,10 @@ export default function CoachPage() {
 
       const data = await res.json()
 
+      if (data.blockerAnalysis) {
+        setBlockerAnalysis(data.blockerAnalysis)
+      }
+
       if (data.careers) {
         setIsAnalyzing(true)
         await new Promise((r) => setTimeout(r, 2000))
@@ -120,7 +125,7 @@ export default function CoachPage() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content:
-          "I encountered an issue connecting to my analysis engine. Please check your API key in .env.local and try again.",
+          "J'ai rencontré un problème de connexion à mon moteur d'analyse. Vérifie ta clé API dans .env.local et réessaie.",
         timestamp: new Date(),
       }
       addMessage(errMsg)
@@ -137,7 +142,7 @@ export default function CoachPage() {
     const selectionMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: `I want to pursue ${career.title}. Please generate my action plan.`,
+      content: `Je veux poursuivre la carrière de ${career.title}. Génère mon plan d'action personnalisé.`,
       timestamp: new Date(),
     }
 
@@ -206,7 +211,7 @@ export default function CoachPage() {
             style={{ color: '#64748b' }}
           >
             <ArrowLeft size={14} />
-            Back
+            Retour
           </button>
         </div>
 
@@ -220,7 +225,7 @@ export default function CoachPage() {
                 className="text-center"
               >
                 <p className="text-xs font-medium" style={{ color: '#a78bfa' }}>
-                  {isAnalyzing ? 'Analyzing your profile...' : 'AI is thinking...'}
+                  {isAnalyzing ? 'Analyse de ton profil…' : "L'IA réfléchit…"}
                 </p>
                 <div className="flex justify-center gap-1 mt-2">
                   {[0, 1, 2, 3].map((i) => (
@@ -239,7 +244,7 @@ export default function CoachPage() {
 
           <div className="mt-4 text-center">
             <p className="text-xs" style={{ color: '#334155' }}>
-              {dataPoints} data points collected
+              {dataPoints} données collectées
             </p>
           </div>
         </div>
@@ -266,13 +271,13 @@ export default function CoachPage() {
             <Brain size={14} className="text-white" />
           </div>
           <div>
-            <p className="font-semibold text-sm text-white">AI Career Coach</p>
+            <p className="font-semibold text-sm text-white">Coach Carrière IA</p>
             <p className="text-xs" style={{ color: '#475569' }}>
               {isAnalyzing
-                ? 'Analyzing your profile...'
+                ? 'Analyse en cours…'
                 : isLoading
-                ? 'Thinking...'
-                : 'Online'}
+                ? 'Réflexion…'
+                : 'En ligne'}
             </p>
           </div>
 
@@ -290,7 +295,7 @@ export default function CoachPage() {
                     borderColor: phase === p ? 'rgba(124,58,237,0.4)' : 'transparent',
                   }}
                 >
-                  {p === 'careers' ? 'Careers' : p === 'plan' ? 'Roadmap' : 'Chat'}
+                  {p === 'careers' ? 'Métiers' : p === 'plan' ? 'Feuille de route' : 'Discussion'}
                 </button>
               ))}
             </div>
@@ -330,10 +335,10 @@ export default function CoachPage() {
               >
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold text-white mb-2">
-                    Your Career Matches
+                    Tes métiers idéaux
                   </h2>
                   <p className="text-sm" style={{ color: '#64748b' }}>
-                    Based on your profile, here are your top 3 paths
+                    Basé sur ton profil, voici tes 3 meilleures pistes
                   </p>
                 </div>
 
@@ -352,7 +357,7 @@ export default function CoachPage() {
                 {isLoading && (
                   <div className="mt-6 text-center">
                     <p className="text-sm" style={{ color: '#a78bfa' }}>
-                      Generating your roadmap...
+                      Génération de ta feuille de route…
                     </p>
                   </div>
                 )}
@@ -390,7 +395,7 @@ export default function CoachPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your answer..."
+                placeholder="Écris ta réponse…"
                 rows={1}
                 disabled={isLoading}
                 className="flex-1 bg-transparent text-sm outline-none resize-none"
@@ -417,7 +422,7 @@ export default function CoachPage() {
               </motion.button>
             </div>
             <p className="text-center text-xs mt-2" style={{ color: '#334155' }}>
-              Press Enter to send · Shift+Enter for new line
+              Entrée pour envoyer · Shift+Entrée pour un saut de ligne
             </p>
           </div>
         )}

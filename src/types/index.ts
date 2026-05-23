@@ -1,10 +1,38 @@
 export type UserProfile = {
   interests: string[]
   skills: string[]
+  strengths: string[]
   goals: string
   name?: string
   education?: string
   experience?: string
+  location?: string
+  careerContext?: 'local' | 'remote' | 'ngo' | 'entrepreneurship'
+  currentSituation?: 'étudiant' | 'en_emploi' | 'en_reconversion' | 'sans_emploi' | 'entrepreneur'
+}
+
+export type Blocker = {
+  type:
+    | 'peur_échec'
+    | 'manque_confiance'
+    | 'confusion_orientation'
+    | 'manque_réseau'
+    | 'manque_diplôme'
+    | 'contrainte_financière'
+    | 'peur_jugement'
+    | 'perfectionnisme'
+  label: string
+  description: string
+  coachingAdvice: string
+}
+
+export type BlockerAnalysis = {
+  blockers: Blocker[]
+  strengths: string[]
+  motivationProfile: 'intrinsèque' | 'extrinsèque' | 'mixte'
+  readinessScore: number
+  readinessLabel: string
+  encouragement: string
 }
 
 export type CareerSuggestion = {
@@ -16,6 +44,8 @@ export type CareerSuggestion = {
   salaryRange?: string
   growthPotential?: string
   icon?: string
+  decisionPros?: string[]
+  decisionCons?: string[]
 }
 
 export type ActionPlanStep = {
@@ -24,6 +54,7 @@ export type ActionPlanStep = {
   duration: string
   resources?: string[]
   priority: 'high' | 'medium' | 'low'
+  phase: 'compétences' | 'portfolio' | 'outils_emploi' | 'réseau' | 'entretiens' | 'lancement'
 }
 
 export type ActionPlan = {
@@ -31,6 +62,9 @@ export type ActionPlan = {
   steps: ActionPlanStep[]
   totalDuration: string
   summary: string
+  cvTips?: string[]
+  linkedinTips?: string[]
+  interviewTips?: string[]
 }
 
 export type Message = {
@@ -48,13 +82,6 @@ export type CoachingPhase =
   | 'careers'
   | 'plan'
   | 'dashboard'
-
-export type AgentThought = {
-  thought: string
-  action: string
-  actionInput: Record<string, unknown>
-  observation: string
-}
 
 export type SkillGap = {
   skill: string

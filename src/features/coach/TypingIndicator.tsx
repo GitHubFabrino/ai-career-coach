@@ -36,7 +36,7 @@ export default function TypingIndicator({ isAnalyzing }: Props) {
             <div className="flex gap-1">
               {[0, 1, 2, 3].map((i) => (
                 <motion.div
-                  key={i}
+                  key={`dot-${i}`}
                   className="w-1.5 h-1.5 rounded-full"
                   style={{ background: '#a78bfa' }}
                   animate={{
@@ -52,13 +52,17 @@ export default function TypingIndicator({ isAnalyzing }: Props) {
               ))}
             </div>
             <span className="text-xs" style={{ color: '#a78bfa' }}>
-              Analyzing your profile...
+              Analyse de ton profil en cours…
             </span>
           </div>
         ) : (
           <div className="flex gap-1.5 items-center h-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="typing-dot w-2 h-2 rounded-full" style={{ background: '#a78bfa' }} />
+              <div
+                key={`tdot-${i}`}
+                className="typing-dot w-2 h-2 rounded-full"
+                style={{ background: '#a78bfa' }}
+              />
             ))}
           </div>
         )}

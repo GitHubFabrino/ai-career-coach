@@ -1,20 +1,28 @@
-import type { UserProfile, CareerSuggestion, ActionPlan, SkillGap } from '@/types'
+import type { UserProfile, CareerSuggestion, ActionPlan, SkillGap, BlockerAnalysis } from '@/types'
 
 export type ToolName =
   | 'profile_analyzer'
+  | 'blocker_analyzer'
   | 'career_matcher'
   | 'skill_gap_analyzer'
   | 'action_plan_generator'
 
 export type ToolInput = {
-  profile_analyzer: { answers: Record<string, string> }
-  career_matcher: { profile: UserProfile }
+  profile_analyzer: { answers: Record<string, string>; full_conversation?: string }
+  blocker_analyzer: { profile: UserProfile; full_conversation: string }
+  career_matcher: { profile: UserProfile; blockers?: BlockerAnalysis }
   skill_gap_analyzer: { profile: UserProfile; career: string }
-  action_plan_generator: { profile: UserProfile; career: CareerSuggestion; gaps: SkillGap[] }
+  action_plan_generator: {
+    profile: UserProfile
+    career: CareerSuggestion
+    gaps: SkillGap[]
+    blockers?: BlockerAnalysis
+  }
 }
 
 export type ToolOutput = {
   profile_analyzer: UserProfile
+  blocker_analyzer: BlockerAnalysis
   career_matcher: CareerSuggestion[]
   skill_gap_analyzer: SkillGap[]
   action_plan_generator: ActionPlan
@@ -24,28 +32,55 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'profile_analyzer',
     description:
-      'Analyzes student answers and extracts a structured profile with interests, skills, and goals.',
+      'Analyse la conversation complète pour extraire le profil structuré : intérêts, compétences, forces, objectifs, ville à Madagascar, contexte de carrière (local / remote / ngo / entrepreneuriat) et situation actuelle (étudiant, en emploi, reconversion…). À appeler dès que tu as collecté suffisamment d\'informations.',
     input_schema: {
       type: 'object',
       properties: {
         answers: {
           type: 'object',
-          description: 'Key-value pairs of question IDs to user answers',
+          description: 'Faits clés extraits de la conversation : { name, education, goals, location, careerContext, currentSituation }',
+        },
+        full_conversation: {
+          type: 'string',
+          description: 'Texte complet de la conversation (messages utilisateur) pour une extraction plus riche.',
         },
       },
       required: ['answers'],
     },
   },
   {
-    name: 'career_matcher',
+    name: 'blocker_analyzer',
     description:
-      'Matches the user profile to the top 3 most relevant career paths with match scores and explanations.',
+      'Identifie les blocages psychologiques (peurs, manque de confiance, perfectionnisme, confusion…), les forces cachées et le niveau de préparation au changement. Appelle cet outil APRÈS profile_analyzer. C\'est le cœur du coaching — ne jamais sauter cette étape.',
     input_schema: {
       type: 'object',
       properties: {
         profile: {
           type: 'object',
-          description: 'The structured user profile',
+          description: 'Le profil structuré retourné par profile_analyzer',
+        },
+        full_conversation: {
+          type: 'string',
+          description: 'Texte complet de la conversation pour détecter les signaux faibles (hésitations, formulations négatives, doutes exprimés)',
+        },
+      },
+      required: ['profile', 'full_conversation'],
+    },
+  },
+  {
+    name: 'career_matcher',
+    description:
+      'Associe le profil utilisateur aux 3 meilleures voies professionnelles dans le contexte malgache, avec scores de compatibilité personnalisés, arguments POUR et CONTRE chaque option pour aider la décision. Prend en compte les blocages identifiés pour ajuster les recommandations.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        profile: {
+          type: 'object',
+          description: 'Le profil structuré de l\'utilisateur',
+        },
+        blockers: {
+          type: 'object',
+          description: 'L\'analyse des blocages pour adapter les recommandations',
         },
       },
       required: ['profile'],
@@ -54,12 +89,12 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'skill_gap_analyzer',
     description:
-      'Identifies skills the user needs to develop for a specific career path.',
+      'Identifie les compétences à développer pour atteindre un métier spécifique. Retourne des écarts avec des ressources GRATUITES et accessibles à Madagascar (faible bande passante, en français, utilisables sur mobile).',
     input_schema: {
       type: 'object',
       properties: {
-        profile: { type: 'object', description: 'The user profile' },
-        career: { type: 'string', description: 'The target career title' },
+        profile: { type: 'object', description: 'Le profil utilisateur' },
+        career: { type: 'string', description: 'Le titre exact du métier visé (correspondance exacte avec career_matcher)' },
       },
       required: ['profile', 'career'],
     },
@@ -67,13 +102,14 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'action_plan_generator',
     description:
-      'Generates a step-by-step action plan for the user to reach their chosen career.',
+      'Génère un plan d\'action complet et personnalisé couvrant les 6 phases : compétences → portfolio → outils de recherche d\'emploi (CV, LinkedIn, personal branding) → réseau → préparation entretiens → lancement. Adapté au contexte de l\'utilisateur (local / remote / ONG) et à ses blocages identifiés.',
     input_schema: {
       type: 'object',
       properties: {
-        profile: { type: 'object' },
-        career: { type: 'object', description: 'The selected career suggestion' },
-        gaps: { type: 'array', description: 'Skill gaps identified' },
+        profile: { type: 'object', description: 'Le profil utilisateur' },
+        career: { type: 'object', description: 'La suggestion de carrière sélectionnée' },
+        gaps: { type: 'array', description: 'Les lacunes de compétences identifiées' },
+        blockers: { type: 'object', description: 'L\'analyse des blocages pour personnaliser le coaching' },
       },
       required: ['profile', 'career', 'gaps'],
     },

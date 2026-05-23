@@ -5,9 +5,9 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'AI Career Coach — Discover Your Path',
+  title: 'Coach Carrière IA — Découvre ta voie',
   description:
-    'An immersive AI-powered career coaching experience that helps students find their ideal career path.',
+    'Une expérience de coaching carrière IA immersive qui aide les étudiants à trouver leur parcours professionnel idéal à Madagascar.',
 }
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="fr" className={`${inter.variable} h-full`}>
       <body className="min-h-full" style={{ background: '#050510', color: '#e2e8f0' }}>
         {children}
       </body>

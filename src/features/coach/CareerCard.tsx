@@ -44,9 +44,7 @@ export default function CareerCard({ career, index, selected, onSelect }: Props)
 
       <div className="text-3xl mb-3">{career.icon}</div>
 
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="font-bold text-lg text-white">{career.title}</h3>
-      </div>
+      <h3 className="font-bold text-lg text-white mb-3">{career.title}</h3>
 
       <div className="flex items-center gap-2 mb-4">
         <div
@@ -58,9 +56,7 @@ export default function CareerCard({ career, index, selected, onSelect }: Props)
             animate={{ width: `${career.matchScore}%` }}
             transition={{ delay: index * 0.15 + 0.3, duration: 0.8 }}
             className="h-full rounded-full"
-            style={{
-              background: 'linear-gradient(90deg, #7c3aed, #60a5fa)',
-            }}
+            style={{ background: 'linear-gradient(90deg, #7c3aed, #60a5fa)' }}
           />
         </div>
         <span className="text-sm font-bold" style={{ color: '#a78bfa' }}>
@@ -72,12 +68,15 @@ export default function CareerCard({ career, index, selected, onSelect }: Props)
         {career.description}
       </p>
 
-      <div className="text-sm mb-4 p-3 rounded-xl" style={{ background: 'rgba(124,58,237,0.1)', color: '#c4b5fd' }}>
-        <span className="font-medium">Why it fits: </span>
+      <div
+        className="text-sm mb-4 p-3 rounded-xl"
+        style={{ background: 'rgba(124,58,237,0.1)', color: '#c4b5fd' }}
+      >
+        <span className="font-medium">Pourquoi ça te correspond : </span>
         {career.whyItFits}
       </div>
 
-      <div className="flex gap-4 text-xs" style={{ color: '#64748b' }}>
+      <div className="flex gap-4 text-xs mb-4" style={{ color: '#64748b' }}>
         {career.salaryRange && (
           <span className="flex items-center gap-1">
             <DollarSign size={11} />
@@ -92,7 +91,7 @@ export default function CareerCard({ career, index, selected, onSelect }: Props)
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         {career.requiredSkills.slice(0, 3).map((skill) => (
           <span
             key={skill}
@@ -107,6 +106,12 @@ export default function CareerCard({ career, index, selected, onSelect }: Props)
           </span>
         ))}
       </div>
+
+      {!selected && (
+        <p className="text-xs mt-4 text-center" style={{ color: '#334155' }}>
+          Clique pour choisir ce parcours →
+        </p>
+      )}
     </motion.div>
   )
 }
