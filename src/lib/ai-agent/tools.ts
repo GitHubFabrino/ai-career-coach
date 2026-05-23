@@ -32,7 +32,7 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'profile_analyzer',
     description:
-      'Analyse la conversation complète pour extraire le profil structuré : intérêts, compétences, forces, objectifs, ville à Madagascar, contexte de carrière (local / remote / ngo / entrepreneuriat) et situation actuelle (étudiant, en emploi, reconversion…). À appeler dès que tu as collecté suffisamment d\'informations.',
+      'Extrait le profil structuré de l\'utilisateur depuis la conversation : intérêts, compétences, forces, objectifs, ville à Madagascar, contexte de carrière (local / remote / ngo / entrepreneuriat) et situation actuelle (étudiant, en emploi, reconversion…).',
     input_schema: {
       type: 'object',
       properties: {
@@ -51,7 +51,7 @@ export const TOOL_DEFINITIONS = [
   {
     name: 'blocker_analyzer',
     description:
-      'Identifie les blocages psychologiques (peurs, manque de confiance, perfectionnisme, confusion…), les forces cachées et le niveau de préparation au changement. Appelle cet outil APRÈS profile_analyzer. C\'est le cœur du coaching — ne jamais sauter cette étape.',
+      'Identifie les blocages psychologiques (peurs, manque de confiance, perfectionnisme, confusion…), les forces cachées et le niveau de préparation au changement. À utiliser après avoir extrait le profil utilisateur.',
     input_schema: {
       type: 'object',
       properties: {
