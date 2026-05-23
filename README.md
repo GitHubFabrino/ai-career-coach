@@ -59,3 +59,22 @@ src/
     coach-store.ts      Zustand global state
   types/index.ts        Shared TypeScript types
 ```
+Tout est en place. Voici ce qui a été fait :
+
+Fichiers créés :
+
+src/app/api/jobs/route.ts — API qui interroge JSearch (RapidAPI) pour les offres locales/internationales + Remotive en fallback gratuit
+src/features/coach/JobOffers.tsx — Composant avec recherche, 3 modes, et cards d'offres
+src/features/coach/JobOffers.module.css — Styles cohérents avec le reste de l'app
+Fichiers modifiés :
+
+src/app/coach/page.tsx — Nouvel onglet "Offres" (sidebar + mobile bar)
+.env.local — Placeholder RAPIDAPI_KEY= avec instructions
+Pour activer les offres Madagascar + international :
+
+Va sur rapidapi.com → cherche "JSearch" → subscribe (plan Free : 500 req/mois)
+Copie ta clé API et colle-la dans .env.local :
+
+RAPIDAPI_KEY=ta_clé_ici
+Redémarre le serveur (npm run dev)
+Sans clé, le mode Remote fonctionne déjà (Remotive API est gratuite sans authentification) — tu peux l'utiliser tout de suite pour des offres remote internationales.
