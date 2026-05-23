@@ -1,0 +1,167 @@
+/* ════════════════════════════════════════
+   MESSAGE ROW
+════════════════════════════════════════ */
+.message {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.messageUser {
+  flex-direction: row-reverse;
+}
+
+/* ════════════════════════════════════════
+   AVATAR
+════════════════════════════════════════ */
+.avatarWrap {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.avatarAI {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  box-shadow: 0 2px 14px rgba(124,58,237,0.4);
+}
+
+.avatarUser {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* ════════════════════════════════════════
+   BUBBLE
+════════════════════════════════════════ */
+.bubbleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 82%;
+}
+
+.bubbleWrapUser {
+  max-width: 78%;
+  align-items: flex-end;
+}
+
+.bubble {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.bubbleAI {
+  background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.07));
+  border: 1px solid rgba(124,58,237,0.18);
+  border-radius: 4px 18px 18px 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.bubbleUser {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px 4px 18px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ════════════════════════════════════════
+   TIMESTAMP
+════════════════════════════════════════ */
+.timestamp {
+  font-size: 0.625rem;
+  padding: 0 0.25rem;
+  color: var(--text-4);
+}
+
+.timestampUser {
+  text-align: right;
+}
+
+/* ════════════════════════════════════════
+   CONTENT RENDERING
+════════════════════════════════════════ */
+.blankLine {
+  height: 0.5rem;
+}
+
+.bulletItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.125rem 0;
+}
+
+.bulletDot {
+  margin-top: 0.4rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #a78bfa;
+}
+
+.numberedItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.125rem 0;
+}
+
+.numberedLabel {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.125rem;
+  min-width: 1rem;
+  text-align: right;
+  color: #a78bfa;
+}
+
+.line {
+  display: block;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.125rem;
+  height: 0.875rem;
+  margin-left: 0.125rem;
+  vertical-align: middle;
+  border-radius: 9999px;
+  background: #a78bfa;
+  animation: blink 1s step-end infinite;
+}
+
+/* ════════════════════════════════════════
+   INLINE FORMATTING
+════════════════════════════════════════ */
+.bold {
+  font-weight: 600;
+  color: white;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.inlineCode {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  background: rgba(124,58,237,0.2);
+  color: #c4b5fd;
+}

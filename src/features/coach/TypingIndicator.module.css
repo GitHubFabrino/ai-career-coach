@@ -1,0 +1,77 @@
+.row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  box-shadow: 0 2px 14px rgba(124,58,237,0.4);
+}
+
+.bubble {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.07));
+  border: 1px solid rgba(124,58,237,0.18);
+  border-radius: 4px 18px 18px 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* ── Analyzing state (waveform) ── */
+.analyzingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  height: 1.25rem;
+}
+
+.waveBar {
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(to top, #7c3aed, #c4b5fd);
+}
+
+.analyzingText {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #a78bfa;
+}
+
+/* ── Typing state (dots) ── */
+.typingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+  height: 1rem;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #a78bfa;
+}
+
+.typingText {
+  font-size: 0.75rem;
+  color: var(--text-4);
+}

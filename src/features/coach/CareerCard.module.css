@@ -1,0 +1,186 @@
+/* ════════════════════════════════════════
+   SCORE RING
+════════════════════════════════════════ */
+.scoreRing {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.scoreRingLabel {
+  position: absolute;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ════════════════════════════════════════
+   CARD
+════════════════════════════════════════ */
+.card {
+  cursor: pointer;
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.25s ease;
+}
+
+.hoverGlow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.07), transparent 60%);
+}
+
+.card:hover .hoverGlow {
+  opacity: 1;
+}
+
+.cardContent {
+  position: relative;
+  padding: 1.25rem;
+}
+
+/* ── Top row ── */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.topLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.careerIcon {
+  font-size: 1.875rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.titleWrap {
+  min-width: 0;
+}
+
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  margin-bottom: 0.375rem;
+}
+
+.careerTitle {
+  font-weight: 700;
+  color: white;
+  line-height: 1.25;
+  font-size: 1rem;
+}
+
+/* ── Description ── */
+.description {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  margin-bottom: 1rem;
+  color: var(--text-2);
+}
+
+/* ── Why it fits ── */
+.whyBox {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  background: rgba(124,58,237,0.07);
+  border: 1px solid rgba(124,58,237,0.15);
+  color: #c4b5fd;
+}
+
+.whyLabel {
+  font-weight: 600;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* ── Salary + growth ── */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.metaBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ── Skills ── */
+.skillsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.skillTag {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: var(--text-2);
+}
+
+/* ── CTA ── */
+.ctaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.2);
+  color: #a78bfa;
+}
+
+.ctaSelected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.3);
+  color: #a78bfa;
+}

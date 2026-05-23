@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Brain, Cpu } from 'lucide-react'
+import styles from './TypingIndicator.module.css'
 
 type Props = {
   isAnalyzing?: boolean
@@ -16,15 +17,11 @@ export default function TypingIndicator({ isAnalyzing }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-      className="flex gap-3 items-start"
+      className={styles.row}
     >
       {/* Avatar */}
       <motion.div
-        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{
-          background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-          boxShadow: '0 2px 14px rgba(124,58,237,0.4)',
-        }}
+        className={styles.avatar}
         animate={{
           boxShadow: [
             '0 2px 14px rgba(124,58,237,0.4)',
@@ -34,48 +31,31 @@ export default function TypingIndicator({ isAnalyzing }: Props) {
         }}
         transition={{ duration: 1.6, repeat: Infinity }}
       >
-        {isAnalyzing ? (
-          <Cpu size={13} className="text-white" />
-        ) : (
-          <Brain size={14} className="text-white" />
-        )}
+        {isAnalyzing
+          ? <Cpu size={13} style={{ color: 'white' }} />
+          : <Brain size={14} style={{ color: 'white' }} />
+        }
       </motion.div>
 
       {/* Bubble */}
-      <div
-        className="px-4 py-3"
-        style={{
-          background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.07))',
-          border: '1px solid rgba(124,58,237,0.18)',
-          borderRadius: '4px 18px 18px 18px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
-        }}
-      >
+      <div className={styles.bubble}>
         {isAnalyzing ? (
-          <div className="flex items-center gap-3">
-            {/* Waveform bars */}
-            <div className="flex items-center gap-0.5 h-5">
+          <div className={styles.analyzingRow}>
+            <div className={styles.waveform}>
               {BARS.map((i) => (
                 <motion.div
                   key={i}
-                  className="w-[3px] rounded-full"
-                  style={{ background: 'linear-gradient(to top, #7c3aed, #c4b5fd)' }}
+                  className={styles.waveBar}
                   animate={{
                     height: ['6px', '20px', '8px', '16px', '6px'],
                     opacity: [0.5, 1, 0.7, 1, 0.5],
                   }}
-                  transition={{
-                    duration: 1.1,
-                    repeat: Infinity,
-                    delay: i * 0.12,
-                    ease: 'easeInOut',
-                  }}
+                  transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.12, ease: 'easeInOut' }}
                 />
               ))}
             </div>
             <motion.span
-              className="text-xs font-medium"
-              style={{ color: '#a78bfa' }}
+              className={styles.analyzingText}
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 1.8, repeat: Infinity }}
             >
@@ -83,30 +63,19 @@ export default function TypingIndicator({ isAnalyzing }: Props) {
             </motion.span>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5">
-            {/* Typing dots */}
-            <div className="flex gap-1.5 items-center h-4">
+          <div className={styles.typingRow}>
+            <div className={styles.dots}>
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: '#a78bfa' }}
-                  animate={{
-                    scale: [0.6, 1, 0.6],
-                    opacity: [0.3, 1, 0.3],
-                  }}
-                  transition={{
-                    duration: 1.0,
-                    repeat: Infinity,
-                    delay: i * 0.22,
-                    ease: 'easeInOut',
-                  }}
+                  className={styles.dot}
+                  animate={{ scale: [0.6, 1, 0.6], opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1.0, repeat: Infinity, delay: i * 0.22, ease: 'easeInOut' }}
                 />
               ))}
             </div>
             <motion.span
-              className="text-xs"
-              style={{ color: 'var(--text-4)' }}
+              className={styles.typingText}
               animate={{ opacity: [0.5, 0.9, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
             >

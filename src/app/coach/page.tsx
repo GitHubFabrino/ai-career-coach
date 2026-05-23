@@ -13,6 +13,7 @@ import ActionPlanView from '@/features/coach/ActionPlanView'
 import CVAnalyzer from '@/features/coach/CVAnalyzer'
 import InterviewSimulator from '@/features/coach/InterviewSimulator'
 import type { Message } from '@/types'
+import styles from './page.module.css'
 
 const HeroScene = dynamic(() => import('@/components/3d/HeroScene'), {
   ssr: false,
@@ -66,11 +67,19 @@ export default function CoachPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
 
+  const resizeTextarea = () => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`
+  }
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input.trim(), timestamp: new Date() }
     addMessage(userMsg)
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setIsLoading(true)
     setDataPoints((d) => Math.min(d + 3, 28))
     try {
@@ -156,54 +165,31 @@ export default function CoachPage() {
   })
 
   return (
-    <div className="flex h-screen h-dvh overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div className={styles.pageWrapper}>
 
       {/* ══════════════════════════════════
           LEFT SIDEBAR (desktop)
       ══════════════════════════════════ */}
-      <div
-        className="hidden lg:flex flex-col w-72 xl:w-80 flex-shrink-0 relative"
-        style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        {/* 3D scene background */}
-        <div className="absolute inset-0">
+      <div className={styles.sidebar}>
+
+        <div className={styles.sidebarBg}>
           <HeroScene isAnalyzing={isAnalyzing || isLoading} dataPointCount={dataPoints} compact />
         </div>
 
-        {/* Sidebar content */}
-        <div className="relative z-10 flex flex-col h-full">
+        <div className={styles.sidebarContent}>
 
           {/* ── Logo + back ── */}
-          <div className="p-4 xl:p-5 flex items-center justify-between border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                  boxShadow: '0 2px 14px rgba(124,58,237,0.45)',
-                }}
-              >
-                <Brain size={15} className="text-white" />
+          <div className={styles.sidebarHeader}>
+            <div className={styles.sidebarLogo}>
+              <div className={styles.sidebarLogoIcon}>
+                <Brain size={15} style={{ color: 'white' }} />
               </div>
-              <div className="leading-none">
-                <span className="font-bold text-sm text-white font-display">Coach Carrière</span>
-                <span
-                  className="ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
-                  style={{ background: 'rgba(124,58,237,0.18)', color: '#a78bfa' }}
-                >
-                  IA
-                </span>
+              <div className={styles.sidebarLogoText}>
+                <span className={styles.sidebarLogoName}>Coach Carrière</span>
+                <span className={styles.sidebarLogoBadge}>IA</span>
               </div>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-all"
-              style={{
-                color: 'var(--text-3)',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.07)',
-              }}
-            >
+            <button onClick={() => router.push('/')} className={styles.sidebarBackBtn}>
               <ArrowLeft size={11} />
               Accueil
             </button>
@@ -211,21 +197,16 @@ export default function CoachPage() {
 
           {/* ── Navigation ── */}
           {visibleTabs.length > 1 && (
-            <div className="px-3 xl:px-4 pt-4 mb-2">
-              <p
-                className="text-[9px] font-bold uppercase tracking-[0.15em] mb-2.5 px-1"
-                style={{ color: 'var(--text-4)' }}
-              >
-                Navigation
-              </p>
-              <div className="space-y-0.5">
+            <div className={styles.sidebarSection} style={{ paddingTop: '1rem' }}>
+              <p className={styles.sidebarSectionLabel}>Navigation</p>
+              <div className={styles.navList}>
                 {visibleTabs.map((item) => {
                   const isActive = phase === item.id
                   return (
                     <button
                       key={item.id}
                       onClick={() => setPhase(item.id)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                      className={styles.navItem}
                       style={{
                         background: isActive ? `${item.color}14` : 'transparent',
                         border: isActive ? `1px solid ${item.color}22` : '1px solid transparent',
@@ -235,10 +216,7 @@ export default function CoachPage() {
                       <item.icon size={14} />
                       {item.label}
                       {isActive && (
-                        <span
-                          className="ml-auto w-1.5 h-1.5 rounded-full"
-                          style={{ background: item.color }}
-                        />
+                        <span className={styles.navItemDot} style={{ background: item.color }} />
                       )}
                     </button>
                   )
@@ -249,14 +227,9 @@ export default function CoachPage() {
 
           {/* ── Tools ── */}
           {hasCareer && (
-            <div className="px-3 xl:px-4 mb-2">
-              <p
-                className="text-[9px] font-bold uppercase tracking-[0.15em] mb-2.5 px-1"
-                style={{ color: 'var(--text-4)' }}
-              >
-                Outils
-              </p>
-              <div className="space-y-0.5">
+            <div className={styles.sidebarSection}>
+              <p className={styles.sidebarSectionLabel}>Outils</p>
+              <div className={styles.navList}>
                 {[
                   { id: 'cv' as AppPhase, label: 'Analyser mon CV', icon: FileText, color: '#fbbf24', activeBg: 'rgba(245,158,11,0.1)', activeBorder: 'rgba(245,158,11,0.2)' },
                   { id: 'entretien' as AppPhase, label: 'Simuler un entretien', icon: Mic, color: '#34d399', activeBg: 'rgba(16,185,129,0.1)', activeBorder: 'rgba(16,185,129,0.2)' },
@@ -264,7 +237,7 @@ export default function CoachPage() {
                   <button
                     key={tool.id}
                     onClick={() => setPhase(tool.id)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                    className={styles.navItem}
                     style={{
                       background: phase === tool.id ? tool.activeBg : 'rgba(255,255,255,0.03)',
                       border: `1px solid ${phase === tool.id ? tool.activeBorder : 'rgba(255,255,255,0.06)'}`,
@@ -280,64 +253,47 @@ export default function CoachPage() {
           )}
 
           {/* ── Status / Progress ── */}
-          <div className="mt-auto px-3 xl:px-4 pb-4 xl:pb-5 space-y-3">
-            {/* AI thinking state */}
+          <div className={styles.sidebarBottom}>
             <AnimatePresence>
               {(isLoading || isAnalyzing) && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 4 }}
-                  className="p-3 rounded-xl"
-                  style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}
+                  className={styles.aiStatusCard}
                 >
-                  <div className="flex gap-1 mb-1.5 justify-center">
+                  <div className={styles.aiWaves}>
                     {[0, 1, 2, 3].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-0.5 h-4 rounded-full"
-                        style={{ background: '#a78bfa' }}
+                        className={styles.aiWave}
                         animate={{ scaleY: [0.3, 1, 0.3] }}
                         transition={{ duration: 0.75, repeat: Infinity, delay: i * 0.1 }}
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-center font-medium" style={{ color: '#a78bfa' }}>
+                  <p className={styles.aiStatusText}>
                     {isAnalyzing ? 'Analyse du profil…' : 'Réflexion en cours…'}
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Data progress */}
-            <div
-              className="p-3 rounded-xl space-y-2"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium" style={{ color: 'var(--text-3)' }}>Profil complété</span>
-                <span className="text-[11px] font-bold" style={{ color: '#a78bfa' }}>{Math.round(progress)}%</span>
+            <div className={styles.progressCard}>
+              <div className={styles.progressHeader}>
+                <span className={styles.progressLabel}>Profil complété</span>
+                <span className={styles.progressValue}>{Math.round(progress)}%</span>
               </div>
-              <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+              <div className={styles.progressBar}>
                 <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }}
+                  className={styles.progressFill}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
             </div>
 
-            {/* Restart */}
-            <button
-              onClick={handleRestart}
-              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all"
-              style={{
-                color: 'var(--text-4)',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.05)',
-              }}
-            >
+            <button onClick={handleRestart} className={styles.restartBtn}>
               <RotateCcw size={11} />
               Recommencer
             </button>
@@ -348,60 +304,41 @@ export default function CoachPage() {
       {/* ══════════════════════════════════
           MAIN CONTENT
       ══════════════════════════════════ */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={styles.mainContent}>
 
         {/* ── Mobile top header ── */}
-        <div
-          className="flex items-center gap-3 px-4 py-3 flex-shrink-0 lg:hidden"
-          style={{
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(16px)',
-            background: 'rgba(5,5,15,0.8)',
-          }}
-        >
-          <button
-            onClick={() => router.push('/')}
-            className="p-2 rounded-xl flex-shrink-0"
-            style={{
-              color: 'var(--text-3)',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-          >
+        <div className={styles.mobileHeader}>
+          <button onClick={() => router.push('/')} className={styles.mobileBackBtn}>
             <ArrowLeft size={15} />
           </button>
 
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
-          >
-            <Brain size={14} className="text-white" />
+          <div className={styles.mobileBrainIcon}>
+            <Brain size={14} style={{ color: 'white' }} />
           </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-white font-display truncate">Coach Carrière IA</p>
-            <div className="flex items-center gap-1.5">
+          <div className={styles.mobileTitleArea}>
+            <p className={styles.mobileTitleText}>Coach Carrière IA</p>
+            <div className={styles.mobileStatusRow}>
               <span
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                className={styles.mobileStatusDot}
                 style={{
                   background: isAnalyzing || isLoading ? '#f59e0b' : '#10b981',
                   animation: isAnalyzing || isLoading ? 'pulse 1s infinite' : 'none',
                 }}
               />
-              <p className="text-xs truncate" style={{ color: 'var(--text-3)' }}>
+              <p className={styles.mobileStatusText}>
                 {isAnalyzing ? 'Analyse…' : isLoading ? 'Réflexion…' : 'En ligne'}
               </p>
             </div>
           </div>
 
-          {/* Mobile tab icons */}
           {visibleTabs.length > 1 && (
-            <div className="flex gap-1 flex-shrink-0">
+            <div className={styles.mobileTabBar}>
               {visibleTabs.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setPhase(item.id)}
-                  className="p-2 rounded-xl transition-all"
+                  className={styles.mobileTabBtn}
                   style={{
                     background: phase === item.id ? `${item.color}18` : 'transparent',
                     color: phase === item.id ? item.color : 'var(--text-4)',
@@ -416,7 +353,7 @@ export default function CoachPage() {
         </div>
 
         {/* ── Content area ── */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
+        <div className={styles.contentArea}>
           <AnimatePresence mode="wait">
 
             {/* Chat */}
@@ -426,7 +363,7 @@ export default function CoachPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-3 max-w-2xl mx-auto"
+                className={styles.chatThread}
               >
                 {messages.map((msg, i) => (
                   <ChatMessage
@@ -447,28 +384,19 @@ export default function CoachPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="max-w-2xl mx-auto"
+                className={styles.careersView}
               >
-                <div className="text-center mb-8">
-                  <div
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
-                    style={{
-                      background: 'rgba(96,165,250,0.1)',
-                      border: '1px solid rgba(96,165,250,0.2)',
-                      color: '#60a5fa',
-                    }}
-                  >
+                <div className={styles.careersHeader}>
+                  <div className={styles.careersBadge}>
                     <Briefcase size={11} />
                     Résultats personnalisés
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-display">
+                  <h2 className={styles.careersTitle}>
                     Tes <span className="gradient-text">métiers idéaux</span>
                   </h2>
-                  <p className="text-sm" style={{ color: 'var(--text-2)' }}>
-                    Classés par compatibilité avec ton profil
-                  </p>
+                  <p className={styles.careersSubtitle}>Classés par compatibilité avec ton profil</p>
                 </div>
-                <div className="space-y-4">
+                <div className={styles.careersList}>
                   {careers.map((career, i) => (
                     <CareerCard
                       key={career.title}
@@ -480,11 +408,8 @@ export default function CoachPage() {
                   ))}
                 </div>
                 {isLoading && (
-                  <div
-                    className="mt-6 text-center p-4 rounded-2xl"
-                    style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)' }}
-                  >
-                    <p className="text-sm" style={{ color: '#a78bfa' }}>Génération de ta feuille de route…</p>
+                  <div className={styles.careersLoadingCard}>
+                    <p className={styles.careersLoadingText}>Génération de ta feuille de route…</p>
                   </div>
                 )}
               </motion.div>
@@ -519,86 +444,50 @@ export default function CoachPage() {
 
         {/* ── Chat input ── */}
         {phase === 'chat' && (
-          <div
-            className="flex-shrink-0 px-4 md:px-6 py-3 safe-bottom"
-            style={{
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-              backdropFilter: 'blur(16px)',
-              background: 'rgba(5,5,15,0.7)',
-            }}
-          >
-            <div
-              className="flex gap-3 items-end max-w-2xl mx-auto rounded-2xl p-3 transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-              onFocus={(e) => {
-                const el = e.currentTarget
-                el.style.borderColor = 'rgba(124,58,237,0.35)'
-                el.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.08)'
-              }}
-              onBlur={(e) => {
-                const el = e.currentTarget
-                el.style.borderColor = 'rgba(255,255,255,0.08)'
-                el.style.boxShadow = 'none'
-              }}
-            >
+          <div className={styles.inputArea}>
+            <div className={styles.inputWrapper}>
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); resizeTextarea() }}
                 onKeyDown={handleKeyDown}
                 placeholder="Écris ta réponse…"
                 rows={1}
                 disabled={isLoading}
-                className="flex-1 bg-transparent text-sm outline-none resize-none"
-                style={{
-                  color: 'var(--text)',
-                  maxHeight: 120,
-                  lineHeight: '1.6',
-                }}
+                className={styles.inputTextarea}
               />
               <motion.button
-                whileHover={input.trim() && !isLoading ? { scale: 1.1 } : {}}
-                whileTap={input.trim() && !isLoading ? { scale: 0.9 } : {}}
+                whileHover={input.trim() && !isLoading ? { scale: 1.08 } : {}}
+                whileTap={input.trim() && !isLoading ? { scale: 0.92 } : {}}
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
+                className={styles.sendBtn}
                 style={{
                   background: input.trim() && !isLoading
                     ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
                     : 'rgba(255,255,255,0.06)',
                   boxShadow: input.trim() && !isLoading
-                    ? '0 2px 14px rgba(124,58,237,0.45)'
+                    ? '0 4px 20px rgba(124,58,237,0.5)'
                     : 'none',
                 }}
               >
-                <Send
-                  size={14}
-                  style={{ color: input.trim() && !isLoading ? 'white' : 'var(--text-4)' }}
-                />
+                <Send size={13} style={{ color: input.trim() && !isLoading ? 'white' : 'var(--text-4)' }} />
               </motion.button>
             </div>
-            <p className="text-center text-[10px] mt-2" style={{ color: 'var(--text-5)' }}>
-              Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
-            </p>
+            <div className={styles.inputFooter}>
+              <span className={styles.inputHintPill}>↵ Envoyer</span>
+              <span className={styles.inputHintSep}>·</span>
+              <span className={styles.inputHintPill}>⇧ ↵ Nouvelle ligne</span>
+            </div>
           </div>
         )}
 
         {/* ── Mobile tools bar ── */}
         {hasResults && (
-          <div
-            className="lg:hidden flex-shrink-0 px-4 py-3 flex gap-2 safe-bottom"
-            style={{
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-              backdropFilter: 'blur(16px)',
-              background: 'rgba(5,5,15,0.8)',
-            }}
-          >
+          <div className={styles.mobileToolsBar}>
             <button
               onClick={() => setPhase('cv')}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              className={styles.mobileToolBtn}
               style={{
                 background: phase === 'cv' ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)',
                 border: phase === 'cv' ? '1px solid rgba(245,158,11,0.25)' : '1px solid rgba(255,255,255,0.07)',
@@ -609,7 +498,7 @@ export default function CoachPage() {
             </button>
             <button
               onClick={() => setPhase('entretien')}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              className={styles.mobileToolBtn}
               style={{
                 background: phase === 'entretien' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)',
                 border: phase === 'entretien' ? '1px solid rgba(16,185,129,0.25)' : '1px solid rgba(255,255,255,0.07)',
