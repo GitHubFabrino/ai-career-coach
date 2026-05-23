@@ -9,6 +9,8 @@ import styles from './CVAnalyzer.module.css'
 type Props = {
   targetCareer?: string
   onRestart: () => void
+  provider?: string
+  modelId?: string
 }
 
 function ScoreRing({ score, color, size = 120 }: { score: number; color: string; size?: number }) {
@@ -42,7 +44,7 @@ function ScoreRing({ score, color, size = 120 }: { score: number; color: string;
   )
 }
 
-export default function CVAnalyzer({ targetCareer, onRestart }: Props) {
+export default function CVAnalyzer({ targetCareer, onRestart, provider = 'anthropic', modelId = 'claude-sonnet-4-6' }: Props) {
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -74,6 +76,8 @@ export default function CVAnalyzer({ targetCareer, onRestart }: Props) {
     const formData = new FormData()
     formData.append('cv', file)
     if (targetCareer) formData.append('career', targetCareer)
+    formData.append('provider', provider)
+    formData.append('modelId', modelId)
     try {
       const res = await fetch('/api/cv-analyze', { method: 'POST', body: formData })
       const data = await res.json()

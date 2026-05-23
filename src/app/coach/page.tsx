@@ -12,6 +12,7 @@ import CareerCard from '@/features/coach/CareerCard'
 import ActionPlanView from '@/features/coach/ActionPlanView'
 import CVAnalyzer from '@/features/coach/CVAnalyzer'
 import InterviewSimulator from '@/features/coach/InterviewSimulator'
+import LLMSelector from '@/features/coach/LLMSelector'
 import type { Message } from '@/types'
 import styles from './page.module.css'
 
@@ -51,6 +52,7 @@ export default function CoachPage() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [phase, setPhase] = useState<AppPhase>('chat')
+  const [llm, setLLM] = useState({ provider: 'anthropic', modelId: 'claude-sonnet-4-6' })
   const [dataPoints, setDataPoints] = useState(2)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -87,7 +89,7 @@ export default function CoachPage() {
       const res = await fetch('/api/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: allMessages }),
+        body: JSON.stringify({ messages: allMessages, provider: llm.provider, modelId: llm.modelId }),
       })
       if (!res.ok) throw new Error('API error')
       const data = await res.json()
@@ -128,7 +130,7 @@ export default function CoachPage() {
       const res = await fetch('/api/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: allMessages }),
+        body: JSON.stringify({ messages: allMessages, provider: llm.provider, modelId: llm.modelId }),
       })
       const data = await res.json()
       if (data.actionPlan) setActionPlan(data.actionPlan)
@@ -251,6 +253,12 @@ export default function CoachPage() {
               </div>
             </div>
           )}
+
+          {/* ── LLM Selector ── */}
+          <div className={styles.sidebarSection}>
+            <p className={styles.sidebarSectionLabel}>Modèle IA</p>
+            <LLMSelector onChange={(p, m) => setLLM({ provider: p, modelId: m })} />
+          </div>
 
           {/* ── Status / Progress ── */}
           <div className={styles.sidebarBottom}>
@@ -425,7 +433,12 @@ export default function CoachPage() {
             {/* CV */}
             {phase === 'cv' && (
               <motion.div key="cv" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <CVAnalyzer targetCareer={selectedCareer?.title || actionPlan?.careerTitle} onRestart={handleRestart} />
+                <CVAnalyzer
+                  targetCareer={selectedCareer?.title || actionPlan?.careerTitle}
+                  onRestart={handleRestart}
+                  provider={llm.provider}
+                  modelId={llm.modelId}
+                />
               </motion.div>
             )}
 
@@ -436,6 +449,8 @@ export default function CoachPage() {
                   targetCareer={selectedCareer?.title || actionPlan?.careerTitle || 'le poste visé'}
                   profile={{ name: undefined }}
                   onRestart={handleRestart}
+                  provider={llm.provider}
+                  modelId={llm.modelId}
                 />
               </motion.div>
             )}

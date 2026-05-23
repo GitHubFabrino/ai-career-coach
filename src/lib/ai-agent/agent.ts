@@ -1,8 +1,20 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { TOOL_DEFINITIONS } from './tools'
+import { PROVIDER_META, type Provider } from '@/lib/llm/providers'
 import type { UserProfile, CareerSuggestion, ActionPlan, SkillGap, BlockerAnalysis, Blocker } from '@/types'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+function toOpenAITools() {
+  return TOOL_DEFINITIONS.map((t) => ({
+    type: 'function' as const,
+    function: {
+      name: t.name,
+      description: t.description,
+      parameters: t.input_schema,
+    },
+  }))
+}
 
 const SYSTEM_PROMPT = `Tu es un Coach Carrière IA d'élite, spécialisé dans l'accompagnement des étudiants et jeunes professionnels à Madagascar et dans la région de l'Océan Indien.
 
@@ -75,10 +87,7 @@ export type AgentMessage = {
   content: string
 }
 
-export async function runAgentTurn(
-  messages: AgentMessage[],
-  onToken?: (token: string) => void
-): Promise<{
+type AgentResult = {
   reply: string
   profile?: UserProfile
   blockerAnalysis?: BlockerAnalysis
@@ -86,7 +95,58 @@ export async function runAgentTurn(
   skillGaps?: SkillGap[]
   actionPlan?: ActionPlan
   phase?: string
-}> {
+}
+
+function executeTool(name: string, input: Record<string, unknown>): AgentResult & { result: unknown } {
+  let result: unknown
+  let profile: UserProfile | undefined
+  let blockerAnalysis: BlockerAnalysis | undefined
+  let careers: CareerSuggestion[] | undefined
+  let skillGaps: SkillGap[] | undefined
+  let actionPlan: ActionPlan | undefined
+  let phase: string | undefined
+
+  if (name === 'profile_analyzer') {
+    result = extractProfile(input.answers as Record<string, string>, input.full_conversation as string | undefined)
+    profile = result as UserProfile
+  } else if (name === 'blocker_analyzer') {
+    result = analyzeBlockers(input.profile as UserProfile, input.full_conversation as string)
+    blockerAnalysis = result as BlockerAnalysis
+  } else if (name === 'career_matcher') {
+    result = matchCareers(input.profile as UserProfile, input.blockers as BlockerAnalysis | undefined)
+    careers = result as CareerSuggestion[]
+    phase = 'careers'
+  } else if (name === 'skill_gap_analyzer') {
+    result = analyzeGaps(input.profile as UserProfile, input.career as string)
+    skillGaps = result as SkillGap[]
+  } else if (name === 'action_plan_generator') {
+    result = generatePlan(
+      input.profile as UserProfile,
+      input.career as CareerSuggestion,
+      input.gaps as SkillGap[],
+      input.blockers as BlockerAnalysis | undefined
+    )
+    actionPlan = result as ActionPlan
+    phase = 'plan'
+  } else {
+    result = { error: 'Outil inconnu' }
+  }
+
+  return { result, reply: '', profile, blockerAnalysis, careers, skillGaps, actionPlan, phase }
+}
+
+export async function runAgentTurn(
+  messages: AgentMessage[],
+  onToken?: (token: string) => void,
+  llm?: { provider: string; modelId: string }
+): Promise<AgentResult> {
+  const provider = llm?.provider ?? 'anthropic'
+  const modelId = llm?.modelId ?? 'claude-sonnet-4-6'
+
+  if (provider !== 'anthropic') {
+    return runAgentTurnOpenAI(messages, provider, modelId)
+  }
+
   let profile: UserProfile | undefined
   let blockerAnalysis: BlockerAnalysis | undefined
   let careers: CareerSuggestion[] | undefined
@@ -104,7 +164,7 @@ export async function runAgentTurn(
 
   while (continueLoop) {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: modelId,
       max_tokens: 8096,
       system: SYSTEM_PROMPT,
       tools: TOOL_DEFINITIONS as Anthropic.Tool[],
@@ -112,62 +172,22 @@ export async function runAgentTurn(
     })
 
     if (response.stop_reason === 'tool_use') {
-      const assistantMessage: Anthropic.MessageParam = {
-        role: 'assistant',
-        content: response.content,
-      }
-      anthropicMessages.push(assistantMessage)
+      anthropicMessages.push({ role: 'assistant', content: response.content })
 
       const toolResults: Anthropic.ToolResultBlockParam[] = []
 
       for (const block of response.content) {
         if (block.type === 'tool_use') {
-          const toolInput = block.input as Record<string, unknown>
-          let result: unknown
+          const { result, profile: p, blockerAnalysis: ba, careers: c, skillGaps: sg, actionPlan: ap, phase: ph } =
+            executeTool(block.name, block.input as Record<string, unknown>)
+          if (p) profile = p
+          if (ba) blockerAnalysis = ba
+          if (c) careers = c
+          if (sg) skillGaps = sg
+          if (ap) actionPlan = ap
+          if (ph) phase = ph
 
-          if (block.name === 'profile_analyzer') {
-            result = extractProfile(
-              toolInput.answers as Record<string, string>,
-              toolInput.full_conversation as string | undefined
-            )
-            profile = result as UserProfile
-          } else if (block.name === 'blocker_analyzer') {
-            result = analyzeBlockers(
-              toolInput.profile as UserProfile,
-              toolInput.full_conversation as string
-            )
-            blockerAnalysis = result as BlockerAnalysis
-          } else if (block.name === 'career_matcher') {
-            result = matchCareers(
-              toolInput.profile as UserProfile,
-              toolInput.blockers as BlockerAnalysis | undefined
-            )
-            careers = result as CareerSuggestion[]
-            phase = 'careers'
-          } else if (block.name === 'skill_gap_analyzer') {
-            result = analyzeGaps(
-              toolInput.profile as UserProfile,
-              toolInput.career as string
-            )
-            skillGaps = result as SkillGap[]
-          } else if (block.name === 'action_plan_generator') {
-            result = generatePlan(
-              toolInput.profile as UserProfile,
-              toolInput.career as CareerSuggestion,
-              toolInput.gaps as SkillGap[],
-              toolInput.blockers as BlockerAnalysis | undefined
-            )
-            actionPlan = result as ActionPlan
-            phase = 'plan'
-          } else {
-            result = { error: 'Outil inconnu' }
-          }
-
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: block.id,
-            content: JSON.stringify(result),
-          })
+          toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) })
         }
       }
 
@@ -179,6 +199,82 @@ export async function runAgentTurn(
           if (onToken) onToken(block.text)
         }
       }
+      continueLoop = false
+    }
+  }
+
+  return { reply: finalReply, profile, blockerAnalysis, careers, skillGaps, actionPlan, phase }
+}
+
+async function runAgentTurnOpenAI(messages: AgentMessage[], provider: string, modelId: string): Promise<AgentResult> {
+  const meta = PROVIDER_META[provider as Provider]
+  const apiKey = process.env[meta.envKey]
+  if (!apiKey) throw new Error(`${meta.envKey} n'est pas configuré dans .env.local`)
+
+  let profile: UserProfile | undefined
+  let blockerAnalysis: BlockerAnalysis | undefined
+  let careers: CareerSuggestion[] | undefined
+  let skillGaps: SkillGap[] | undefined
+  let actionPlan: ActionPlan | undefined
+  let phase: string | undefined
+
+  type OAIMsg = { role: string; content?: string | null; tool_calls?: unknown[]; tool_call_id?: string }
+  const oaiMessages: OAIMsg[] = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...messages.map((m) => ({ role: m.role as string, content: m.content })),
+  ]
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+  }
+  if (provider === 'openrouter') {
+    headers['HTTP-Referer'] = 'https://strongia.coach'
+    headers['X-Title'] = 'Coach Carrière IA'
+  }
+
+  type ToolCall = { id: string; type: string; function: { name: string; arguments: string } }
+  type OAIResponse = {
+    choices: [{ message: { role: string; content: string | null; tool_calls?: ToolCall[] }; finish_reason: string }]
+  }
+
+  let finalReply = ''
+  let continueLoop = true
+
+  while (continueLoop) {
+    const res = await fetch(`${meta.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ model: modelId, max_tokens: 8096, messages: oaiMessages, tools: toOpenAITools(), tool_choice: 'auto' }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(`${provider} API error: ${(err as { error?: { message?: string } }).error?.message || res.statusText}`)
+    }
+
+    const data = await res.json() as OAIResponse
+    const choice = data.choices[0]
+    const msg = choice.message
+
+    if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
+      oaiMessages.push({ role: 'assistant', content: msg.content ?? null, tool_calls: msg.tool_calls })
+
+      for (const tc of msg.tool_calls) {
+        const input = JSON.parse(tc.function.arguments) as Record<string, unknown>
+        const { result, profile: p, blockerAnalysis: ba, careers: c, skillGaps: sg, actionPlan: ap, phase: ph } =
+          executeTool(tc.function.name, input)
+        if (p) profile = p
+        if (ba) blockerAnalysis = ba
+        if (c) careers = c
+        if (sg) skillGaps = sg
+        if (ap) actionPlan = ap
+        if (ph) phase = ph
+
+        oaiMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) })
+      }
+    } else {
+      finalReply = msg.content || ''
       continueLoop = false
     }
   }

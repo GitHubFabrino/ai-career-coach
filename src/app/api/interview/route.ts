@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { callLLMText } from '@/lib/llm/client'
 import type { InterviewQuestion, InterviewAnswer } from '@/types'
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { action, career, profile, question, answer } = body
+    const { action, career, profile, question, answer, provider = 'anthropic', modelId = 'claude-sonnet-4-6' } = body
 
     if (action === 'generate_questions') {
-      return handleGenerateQuestions(career, profile)
+      return handleGenerateQuestions(career, profile, provider, modelId)
     }
 
     if (action === 'evaluate_answer') {
-      return handleEvaluateAnswer(career, question, answer)
+      return handleEvaluateAnswer(career, question, answer, provider, modelId)
     }
 
     if (action === 'final_feedback') {
-      return handleFinalFeedback(career, body.answers)
+      return handleFinalFeedback(career, body.answers, provider, modelId)
     }
 
     return NextResponse.json({ error: 'Action inconnue' }, { status: 400 })
@@ -28,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleGenerateQuestions(career: string, profile: unknown) {
+async function handleGenerateQuestions(career: string, profile: unknown, provider: string, modelId: string) {
   const profileInfo = profile ? `Profil du candidat : ${JSON.stringify(profile)}` : ''
 
   const prompt = `Tu es un expert RH spécialisé en recrutement à Madagascar. Génère 5 questions d'entretien pour le poste suivant.
@@ -80,13 +78,7 @@ Règles :
 - Hint court et actionnable (1 phrase max)
 - Pas de questions discriminatoires`
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '[]'
+  const rawText = await callLLMText({ provider, modelId, messages: [{ role: 'user', content: prompt }], maxTokens: 1024 })
   const jsonMatch = rawText.match(/\[[\s\S]*\]/)
   if (!jsonMatch) throw new Error('Questions invalides')
 
@@ -97,7 +89,9 @@ Règles :
 async function handleEvaluateAnswer(
   career: string,
   question: InterviewQuestion,
-  answer: string
+  answer: string,
+  provider: string,
+  modelId: string
 ) {
   if (!answer || answer.trim().length < 5) {
     const emptyResult: InterviewAnswer = {
@@ -136,13 +130,7 @@ Règles :
 - Si la réponse utilise la méthode STAR, valorise-le
 - Adapte au niveau malgache (pas d'attentes occidentales irréalistes)`
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '{}'
+  const rawText = await callLLMText({ provider, modelId, messages: [{ role: 'user', content: prompt }], maxTokens: 512 })
   const jsonMatch = rawText.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Évaluation invalide')
 
@@ -150,7 +138,7 @@ Règles :
   return NextResponse.json({ evaluation })
 }
 
-async function handleFinalFeedback(career: string, answers: InterviewAnswer[]) {
+async function handleFinalFeedback(career: string, answers: InterviewAnswer[], provider: string, modelId: string) {
   const avgScore = Math.round(
     answers.reduce((acc, a) => acc + a.score, 0) / (answers.length || 1)
   )
@@ -171,13 +159,7 @@ Retourne UNIQUEMENT un objet JSON valide :
 
 Ton : bienveillant, honnête, inspirant. En français.`
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '{}'
+  const rawText = await callLLMText({ provider, modelId, messages: [{ role: 'user', content: prompt }], maxTokens: 512 })
   const jsonMatch = rawText.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Feedback final invalide')
 

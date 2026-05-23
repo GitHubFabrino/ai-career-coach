@@ -1,0 +1,190 @@
+/* ════════════════════════════════════════
+   WRAPPER
+════════════════════════════════════════ */
+.wrapper {
+  position: relative;
+}
+
+/* ════════════════════════════════════════
+   TRIGGER BUTTON
+════════════════════════════════════════ */
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-2);
+  text-align: left;
+}
+
+.trigger:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.providerDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.triggerProvider {
+  font-weight: 600;
+  font-size: 0.6875rem;
+}
+
+.triggerSep {
+  color: var(--text-4);
+  flex-shrink: 0;
+}
+
+.triggerModel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.triggerChevron {
+  flex-shrink: 0;
+  color: var(--text-4);
+  transition: transform 0.2s;
+}
+
+.triggerChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ════════════════════════════════════════
+   DROPDOWN PANEL
+════════════════════════════════════════ */
+.panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.375rem);
+  width: 220px;
+  z-index: 100;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  overflow-y: auto;
+  max-height: 70vh;
+  background: rgba(15,10,25,0.97);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* right-aligned variant when near right edge */
+.panelRight {
+  left: auto;
+  right: 0;
+}
+
+/* ── Provider section ── */
+.providerSection {
+  padding: 0.5rem 0;
+}
+
+.providerSection + .providerSection {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.providerHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+}
+
+.providerHeaderDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Model item ── */
+.modelItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  text-align: left;
+}
+
+.modelItem:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.modelItemActive {
+  color: white;
+  background: rgba(255,255,255,0.06);
+}
+
+.modelName {
+  flex: 1;
+  text-align: left;
+}
+
+.badge {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text-3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  color: #a78bfa;
+}
+
+/* ════════════════════════════════════════
+   MOBILE COMPACT TRIGGER
+════════════════════════════════════════ */
+.triggerCompact {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: var(--text-3);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.triggerCompact:hover {
+  background: rgba(255,255,255,0.08);
+}

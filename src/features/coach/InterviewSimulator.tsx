@@ -10,6 +10,8 @@ type Props = {
   targetCareer: string
   profile?: { name?: string }
   onRestart: () => void
+  provider?: string
+  modelId?: string
 }
 
 type FinalResult = {
@@ -77,7 +79,7 @@ function ScoreRing({ score, color, size = 100 }: { score: number; color: string;
   )
 }
 
-export default function InterviewSimulator({ targetCareer, profile, onRestart }: Props) {
+export default function InterviewSimulator({ targetCareer, profile, onRestart, provider = 'anthropic', modelId = 'claude-sonnet-4-6' }: Props) {
   const [session, setSession] = useState<InterviewSession>({
     questions: [], answers: [], currentQuestionIndex: 0, status: 'idle',
   })
@@ -101,7 +103,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart }:
       const res = await fetch('/api/interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate_questions', career: targetCareer, profile }),
+        body: JSON.stringify({ action: 'generate_questions', career: targetCareer, profile, provider, modelId }),
       })
       const data = await res.json()
       setSession((s) => ({ ...s, questions: data.questions, currentQuestionIndex: 0, answers: [], status: 'questioning' }))
@@ -149,7 +151,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart }:
       const res = await fetch('/api/interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'evaluate_answer', career: targetCareer, question: currentQ, answer: transcript }),
+        body: JSON.stringify({ action: 'evaluate_answer', career: targetCareer, question: currentQ, answer: transcript, provider, modelId }),
       })
       const data = await res.json()
       const newAnswers = [...session.answers, data.evaluation]
@@ -159,7 +161,7 @@ export default function InterviewSimulator({ targetCareer, profile, onRestart }:
         const finalRes = await fetch('/api/interview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'final_feedback', career: targetCareer, answers: newAnswers }),
+          body: JSON.stringify({ action: 'final_feedback', career: targetCareer, answers: newAnswers, provider, modelId }),
         })
         const finalData = await finalRes.json()
         setFinalResult(finalData)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { callLLMText } from '@/lib/llm/client'
 import type { CVAnalysisResult } from '@/types'
 
 // pdf-parse/node is the Node.js-specific build — avoids DOMMatrix and canvas
@@ -7,13 +7,13 @@ import type { CVAnalysisResult } from '@/types'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require('pdf-parse/node') as (buf: Buffer) => Promise<{ text: string }>
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('cv') as File | null
     const targetCareer = formData.get('career') as string | null
+    const provider = (formData.get('provider') as string | null) ?? 'anthropic'
+    const modelId = (formData.get('modelId') as string | null) ?? 'claude-sonnet-4-6'
 
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier reçu' }, { status: 400 })
@@ -74,13 +74,7 @@ Règles :
 - Adapte tes conseils au marché malgache si pertinent
 - N'invente pas de compétences absentes du CV`
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const rawText = response.content[0].type === 'text' ? response.content[0].text : ''
+    const rawText = await callLLMText({ provider, modelId, messages: [{ role: 'user', content: prompt }], maxTokens: 2048 })
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error('Réponse Claude invalide')
