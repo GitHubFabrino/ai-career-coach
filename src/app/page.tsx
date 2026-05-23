@@ -1,65 +1,177 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import dynamic from 'next/dynamic'
+import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { ArrowRight, Brain, Zap, Target, Sparkles } from 'lucide-react'
+
+const HeroScene = dynamic(() => import('@/components/3d/HeroScene'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full" />,
+})
+
+const features = [
+  {
+    icon: Brain,
+    title: 'AI-Powered Analysis',
+    desc: 'ReAct agent analyzes your profile with deep insight',
+  },
+  {
+    icon: Target,
+    title: 'Career Matching',
+    desc: 'Get 3 personalized career paths with match scores',
+  },
+  {
+    icon: Zap,
+    title: 'Instant Roadmap',
+    desc: 'Receive a step-by-step action plan tailored to you',
+  },
+  {
+    icon: Sparkles,
+    title: 'Skill Gap Analysis',
+    desc: 'Know exactly what to learn and where to start',
+  },
+]
+
+export default function LandingPage() {
+  const router = useRouter()
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="relative min-h-screen overflow-hidden" style={{ background: '#050510' }}>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 70%)',
+        }}
+      />
+
+      <div className="absolute inset-0 pointer-events-none">
+        <HeroScene dataPointCount={8} />
+      </div>
+
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #3b82f6)' }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <Brain size={16} className="text-white" />
+          </div>
+          <span className="font-semibold text-white">AI Career Coach</span>
+        </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => router.push('/coach')}
+          className="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          style={{
+            color: '#a78bfa',
+            border: '1px solid rgba(124,58,237,0.4)',
+          }}
+        >
+          Get Started
+        </motion.button>
+      </nav>
+
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-20 pb-32">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-sm font-medium"
+          style={{
+            background: 'rgba(124,58,237,0.15)',
+            border: '1px solid rgba(124,58,237,0.3)',
+            color: '#a78bfa',
+          }}
+        >
+          <Sparkles size={14} />
+          Powered by Claude AI — ReAct Agent
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-6xl md:text-8xl font-bold leading-none tracking-tight mb-6"
+          style={{ maxWidth: 900 }}
+        >
+          <span className="text-white">Discover your</span>
+          <br />
+          <span className="glow-text">ideal career</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-lg md:text-xl mb-12 max-w-xl leading-relaxed"
+          style={{ color: '#94a3b8' }}
+        >
+          An immersive AI experience that understands your unique profile,
+          suggests the perfect career paths, and builds your personal roadmap —
+          in minutes.
+        </motion.p>
+
+        <motion.button
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => router.push('/coach')}
+          className="flex items-center gap-3 px-8 py-4 rounded-2xl text-lg font-semibold text-white"
+          style={{
+            background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+            border: '1px solid rgba(167,139,250,0.3)',
+            boxShadow: '0 0 40px rgba(124,58,237,0.4)',
+          }}
+        >
+          Start your journey
+          <ArrowRight size={20} />
+        </motion.button>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="mt-4 text-sm"
+          style={{ color: '#475569' }}
+        >
+          Free · No signup required · Takes 5 minutes
+        </motion.p>
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 pb-24">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {features.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 + i * 0.1 }}
+              className="glass p-5 rounded-2xl"
+            >
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+                style={{ background: 'rgba(124,58,237,0.2)' }}
+              >
+                <f.icon size={18} style={{ color: '#a78bfa' }} />
+              </div>
+              <h3 className="font-semibold text-sm text-white mb-1">{f.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>
+                {f.desc}
+              </p>
+            </motion.div>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }
