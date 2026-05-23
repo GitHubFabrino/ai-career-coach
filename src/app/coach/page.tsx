@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, ArrowLeft, Brain, FileText, Mic, Map, Briefcase, MessageSquare } from 'lucide-react'
+import { Send, ArrowLeft, Brain, FileText, Mic, Map, Briefcase, MessageSquare, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCoachStore } from '@/store/coach-store'
 import ChatMessage from '@/features/coach/ChatMessage'
@@ -32,11 +32,11 @@ function makeInitialMessage(): Message {
 }
 
 const phaseNavItems: { id: AppPhase; label: string; icon: typeof MessageSquare; color: string }[] = [
-  { id: 'chat',      label: 'Discussion',      icon: MessageSquare, color: '#a78bfa' },
-  { id: 'careers',   label: 'Métiers',         icon: Briefcase,     color: '#60a5fa' },
-  { id: 'plan',      label: 'Plan',            icon: Map,           color: '#34d399' },
-  { id: 'cv',        label: 'Analyse CV',      icon: FileText,      color: '#fbbf24' },
-  { id: 'entretien', label: 'Entretien',       icon: Mic,           color: '#f87171' },
+  { id: 'chat',      label: 'Discussion',  icon: MessageSquare, color: '#a78bfa' },
+  { id: 'careers',   label: 'Métiers',     icon: Briefcase,     color: '#60a5fa' },
+  { id: 'plan',      label: 'Plan',        icon: Map,           color: '#34d399' },
+  { id: 'cv',        label: 'Analyse CV',  icon: FileText,      color: '#fbbf24' },
+  { id: 'entretien', label: 'Entretien',   icon: Mic,           color: '#f87171' },
 ]
 
 export default function CoachPage() {
@@ -145,8 +145,8 @@ export default function CoachPage() {
 
   const hasResults = phase !== 'chat' && phase !== 'careers'
   const hasCareer = !!selectedCareer || !!actionPlan
+  const progress = Math.min((dataPoints / 28) * 100, 100)
 
-  // Which nav tabs to show
   const visibleTabs = phaseNavItems.filter((item) => {
     if (item.id === 'chat') return true
     if (item.id === 'careers') return careers.length > 0 || phase === 'careers'
@@ -156,43 +156,69 @@ export default function CoachPage() {
   })
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div className="flex h-screen h-dvh overflow-hidden" style={{ background: 'var(--bg)' }}>
 
-      {/* ── Left sidebar ── */}
-      <div className="hidden lg:flex flex-col w-80 flex-shrink-0 relative" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* 3D scene */}
+      {/* ══════════════════════════════════
+          LEFT SIDEBAR (desktop)
+      ══════════════════════════════════ */}
+      <div
+        className="hidden lg:flex flex-col w-72 xl:w-80 flex-shrink-0 relative"
+        style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
+      >
+        {/* 3D scene background */}
         <div className="absolute inset-0">
           <HeroScene isAnalyzing={isAnalyzing || isLoading} dataPointCount={dataPoints} compact />
         </div>
 
         {/* Sidebar content */}
         <div className="relative z-10 flex flex-col h-full">
-          {/* Logo + back */}
-          <div className="p-5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+
+          {/* ── Logo + back ── */}
+          <div className="p-4 xl:p-5 flex items-center justify-between border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+            <div className="flex items-center gap-2.5">
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', boxShadow: '0 2px 12px rgba(124,58,237,0.4)' }}
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+                  boxShadow: '0 2px 14px rgba(124,58,237,0.45)',
+                }}
               >
                 <Brain size={15} className="text-white" />
               </div>
-              <span className="font-bold text-sm text-white">Coach Carrière</span>
+              <div className="leading-none">
+                <span className="font-bold text-sm text-white font-display">Coach Carrière</span>
+                <span
+                  className="ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+                  style={{ background: 'rgba(124,58,237,0.18)', color: '#a78bfa' }}
+                >
+                  IA
+                </span>
+              </div>
             </div>
             <button
               onClick={() => router.push('/')}
-              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-colors"
-              style={{ color: 'var(--text-3)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-all"
+              style={{
+                color: 'var(--text-3)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}
             >
-              <ArrowLeft size={12} />
+              <ArrowLeft size={11} />
               Accueil
             </button>
           </div>
 
-          {/* Navigation */}
+          {/* ── Navigation ── */}
           {visibleTabs.length > 1 && (
-            <div className="px-4 mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1" style={{ color: 'var(--text-4)' }}>Navigation</p>
-              <div className="space-y-1">
+            <div className="px-3 xl:px-4 pt-4 mb-2">
+              <p
+                className="text-[9px] font-bold uppercase tracking-[0.15em] mb-2.5 px-1"
+                style={{ color: 'var(--text-4)' }}
+              >
+                Navigation
+              </p>
+              <div className="space-y-0.5">
                 {visibleTabs.map((item) => {
                   const isActive = phase === item.id
                   return (
@@ -201,13 +227,19 @@ export default function CoachPage() {
                       onClick={() => setPhase(item.id)}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                       style={{
-                        background: isActive ? `${item.color}15` : 'transparent',
-                        border: isActive ? `1px solid ${item.color}25` : '1px solid transparent',
+                        background: isActive ? `${item.color}14` : 'transparent',
+                        border: isActive ? `1px solid ${item.color}22` : '1px solid transparent',
                         color: isActive ? item.color : 'var(--text-3)',
                       }}
                     >
                       <item.icon size={14} />
                       {item.label}
+                      {isActive && (
+                        <span
+                          className="ml-auto w-1.5 h-1.5 rounded-full"
+                          style={{ background: item.color }}
+                        />
+                      )}
                     </button>
                   )
                 })}
@@ -215,117 +247,156 @@ export default function CoachPage() {
             </div>
           )}
 
-          {/* Tools shortcuts */}
+          {/* ── Tools ── */}
           {hasCareer && (
-            <div className="px-4 mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1" style={{ color: 'var(--text-4)' }}>Outils</p>
-              <div className="space-y-1">
-                <button
-                  onClick={() => setPhase('cv')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                  style={{
-                    background: phase === 'cv' ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)',
-                    border: phase === 'cv' ? '1px solid rgba(245,158,11,0.22)' : '1px solid rgba(255,255,255,0.06)',
-                    color: phase === 'cv' ? '#fbbf24' : 'var(--text-3)',
-                  }}
-                >
-                  <FileText size={14} />
-                  Analyser mon CV
-                </button>
-                <button
-                  onClick={() => setPhase('entretien')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                  style={{
-                    background: phase === 'entretien' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.03)',
-                    border: phase === 'entretien' ? '1px solid rgba(16,185,129,0.22)' : '1px solid rgba(255,255,255,0.06)',
-                    color: phase === 'entretien' ? '#34d399' : 'var(--text-3)',
-                  }}
-                >
-                  <Mic size={14} />
-                  Simuler un entretien
-                </button>
+            <div className="px-3 xl:px-4 mb-2">
+              <p
+                className="text-[9px] font-bold uppercase tracking-[0.15em] mb-2.5 px-1"
+                style={{ color: 'var(--text-4)' }}
+              >
+                Outils
+              </p>
+              <div className="space-y-0.5">
+                {[
+                  { id: 'cv' as AppPhase, label: 'Analyser mon CV', icon: FileText, color: '#fbbf24', activeBg: 'rgba(245,158,11,0.1)', activeBorder: 'rgba(245,158,11,0.2)' },
+                  { id: 'entretien' as AppPhase, label: 'Simuler un entretien', icon: Mic, color: '#34d399', activeBg: 'rgba(16,185,129,0.1)', activeBorder: 'rgba(16,185,129,0.2)' },
+                ].map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => setPhase(tool.id)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: phase === tool.id ? tool.activeBg : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${phase === tool.id ? tool.activeBorder : 'rgba(255,255,255,0.06)'}`,
+                      color: phase === tool.id ? tool.color : 'var(--text-3)',
+                    }}
+                  >
+                    <tool.icon size={14} />
+                    {tool.label}
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Status */}
-          <div className="mt-auto p-5">
+          {/* ── Status / Progress ── */}
+          <div className="mt-auto px-3 xl:px-4 pb-4 xl:pb-5 space-y-3">
+            {/* AI thinking state */}
             <AnimatePresence>
               {(isLoading || isAnalyzing) && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="mb-3 p-3 rounded-xl"
+                  exit={{ opacity: 0, y: 4 }}
+                  className="p-3 rounded-xl"
                   style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}
                 >
                   <div className="flex gap-1 mb-1.5 justify-center">
                     {[0, 1, 2, 3].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-1 h-3.5 rounded-full"
+                        className="w-0.5 h-4 rounded-full"
                         style={{ background: '#a78bfa' }}
-                        animate={{ scaleY: [0.4, 1, 0.4] }}
-                        transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.1 }}
+                        animate={{ scaleY: [0.3, 1, 0.3] }}
+                        transition={{ duration: 0.75, repeat: Infinity, delay: i * 0.1 }}
                       />
                     ))}
                   </div>
                   <p className="text-xs text-center font-medium" style={{ color: '#a78bfa' }}>
-                    {isAnalyzing ? 'Analyse du profil…' : "Réflexion en cours…"}
+                    {isAnalyzing ? 'Analyse du profil…' : 'Réflexion en cours…'}
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Data progress */}
             <div
-              className="flex items-center justify-between px-3 py-2 rounded-xl"
+              className="p-3 rounded-xl space-y-2"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <span className="text-xs" style={{ color: 'var(--text-4)' }}>Données collectées</span>
-              <span className="text-xs font-bold" style={{ color: '#a78bfa' }}>{dataPoints}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium" style={{ color: 'var(--text-3)' }}>Profil complété</span>
+                <span className="text-[11px] font-bold" style={{ color: '#a78bfa' }}>{Math.round(progress)}%</span>
+              </div>
+              <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                />
+              </div>
             </div>
+
+            {/* Restart */}
+            <button
+              onClick={handleRestart}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all"
+              style={{
+                color: 'var(--text-4)',
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.05)',
+              }}
+            >
+              <RotateCcw size={11} />
+              Recommencer
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── Main content ── */}
+      {/* ══════════════════════════════════
+          MAIN CONTENT
+      ══════════════════════════════════ */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Mobile header */}
+        {/* ── Mobile top header ── */}
         <div
-          className="flex items-center gap-3 px-4 py-3.5 flex-shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}
+          className="flex items-center gap-3 px-4 py-3 flex-shrink-0 lg:hidden"
+          style={{
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(16px)',
+            background: 'rgba(5,5,15,0.8)',
+          }}
         >
           <button
             onClick={() => router.push('/')}
-            className="lg:hidden p-1.5 rounded-lg mr-1"
-            style={{ color: 'var(--text-3)', background: 'rgba(255,255,255,0.04)' }}
+            className="p-2 rounded-xl flex-shrink-0"
+            style={{
+              color: 'var(--text-3)',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
           </button>
 
           <div
-            className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center"
+            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
           >
             <Brain size={14} className="text-white" />
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-white">Coach Carrière IA</p>
+            <p className="font-bold text-sm text-white font-display truncate">Coach Carrière IA</p>
             <div className="flex items-center gap-1.5">
               <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: isAnalyzing || isLoading ? '#f59e0b' : '#10b981', animation: isAnalyzing || isLoading ? 'pulse 1s infinite' : 'none' }}
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                style={{
+                  background: isAnalyzing || isLoading ? '#f59e0b' : '#10b981',
+                  animation: isAnalyzing || isLoading ? 'pulse 1s infinite' : 'none',
+                }}
               />
-              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                {isAnalyzing ? 'Analyse en cours…' : isLoading ? 'Réflexion…' : 'En ligne'}
+              <p className="text-xs truncate" style={{ color: 'var(--text-3)' }}>
+                {isAnalyzing ? 'Analyse…' : isLoading ? 'Réflexion…' : 'En ligne'}
               </p>
             </div>
           </div>
 
-          {/* Mobile tab strip */}
+          {/* Mobile tab icons */}
           {visibleTabs.length > 1 && (
-            <div className="lg:hidden flex gap-1">
+            <div className="flex gap-1 flex-shrink-0">
               {visibleTabs.map((item) => (
                 <button
                   key={item.id}
@@ -335,6 +406,7 @@ export default function CoachPage() {
                     background: phase === item.id ? `${item.color}18` : 'transparent',
                     color: phase === item.id ? item.color : 'var(--text-4)',
                   }}
+                  title={item.label}
                 >
                   <item.icon size={15} />
                 </button>
@@ -344,14 +416,24 @@ export default function CoachPage() {
         </div>
 
         {/* ── Content area ── */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
           <AnimatePresence mode="wait">
 
             {/* Chat */}
             {phase === 'chat' && (
-              <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3 max-w-2xl mx-auto">
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-3 max-w-2xl mx-auto"
+              >
                 {messages.map((msg, i) => (
-                  <ChatMessage key={msg.id} message={msg} isLast={i === messages.length - 1 && msg.role === 'assistant'} />
+                  <ChatMessage
+                    key={msg.id}
+                    message={msg}
+                    isLast={i === messages.length - 1 && msg.role === 'assistant'}
+                  />
                 ))}
                 {isLoading && <TypingIndicator isAnalyzing={isAnalyzing} />}
                 <div ref={messagesEndRef} />
@@ -360,16 +442,26 @@ export default function CoachPage() {
 
             {/* Careers */}
             {phase === 'careers' && (
-              <motion.div key="careers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-2xl mx-auto">
+              <motion.div
+                key="careers"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="max-w-2xl mx-auto"
+              >
                 <div className="text-center mb-8">
                   <div
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
-                    style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.22)', color: '#60a5fa' }}
+                    style={{
+                      background: 'rgba(96,165,250,0.1)',
+                      border: '1px solid rgba(96,165,250,0.2)',
+                      color: '#60a5fa',
+                    }}
                   >
                     <Briefcase size={11} />
                     Résultats personnalisés
                   </div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-display">
                     Tes <span className="gradient-text">métiers idéaux</span>
                   </h2>
                   <p className="text-sm" style={{ color: 'var(--text-2)' }}>
@@ -378,11 +470,20 @@ export default function CoachPage() {
                 </div>
                 <div className="space-y-4">
                   {careers.map((career, i) => (
-                    <CareerCard key={career.title} career={career} index={i} selected={selectedCareer?.title === career.title} onSelect={() => handleSelectCareer(career)} />
+                    <CareerCard
+                      key={career.title}
+                      career={career}
+                      index={i}
+                      selected={selectedCareer?.title === career.title}
+                      onSelect={() => handleSelectCareer(career)}
+                    />
                   ))}
                 </div>
                 {isLoading && (
-                  <div className="mt-6 text-center p-4 rounded-2xl" style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)' }}>
+                  <div
+                    className="mt-6 text-center p-4 rounded-2xl"
+                    style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)' }}
+                  >
                     <p className="text-sm" style={{ color: '#a78bfa' }}>Génération de ta feuille de route…</p>
                   </div>
                 )}
@@ -416,17 +517,31 @@ export default function CoachPage() {
           </AnimatePresence>
         </div>
 
-        {/* ── Input (chat only) ── */}
+        {/* ── Chat input ── */}
         {phase === 'chat' && (
           <div
-            className="flex-shrink-0 px-4 md:px-6 py-4"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}
+            className="flex-shrink-0 px-4 md:px-6 py-3 safe-bottom"
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(16px)',
+              background: 'rgba(5,5,15,0.7)',
+            }}
           >
             <div
-              className="flex gap-3 items-end max-w-2xl mx-auto rounded-2xl p-3 transition-all focus-within:border-purple-500/30"
+              className="flex gap-3 items-end max-w-2xl mx-auto rounded-2xl p-3 transition-all"
               style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
+              }}
+              onFocus={(e) => {
+                const el = e.currentTarget
+                el.style.borderColor = 'rgba(124,58,237,0.35)'
+                el.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.08)'
+              }}
+              onBlur={(e) => {
+                const el = e.currentTarget
+                el.style.borderColor = 'rgba(255,255,255,0.08)'
+                el.style.boxShadow = 'none'
               }}
             >
               <textarea
@@ -437,12 +552,16 @@ export default function CoachPage() {
                 placeholder="Écris ta réponse…"
                 rows={1}
                 disabled={isLoading}
-                className="flex-1 bg-transparent text-sm outline-none resize-none placeholder:text-slate-600"
-                style={{ color: 'var(--text)', maxHeight: 120, lineHeight: '1.6' }}
+                className="flex-1 bg-transparent text-sm outline-none resize-none"
+                style={{
+                  color: 'var(--text)',
+                  maxHeight: 120,
+                  lineHeight: '1.6',
+                }}
               />
               <motion.button
-                whileHover={input.trim() && !isLoading ? { scale: 1.08 } : {}}
-                whileTap={input.trim() && !isLoading ? { scale: 0.92 } : {}}
+                whileHover={input.trim() && !isLoading ? { scale: 1.1 } : {}}
+                whileTap={input.trim() && !isLoading ? { scale: 0.9 } : {}}
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
@@ -450,23 +569,32 @@ export default function CoachPage() {
                   background: input.trim() && !isLoading
                     ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
                     : 'rgba(255,255,255,0.06)',
-                  boxShadow: input.trim() && !isLoading ? '0 2px 12px rgba(124,58,237,0.4)' : 'none',
+                  boxShadow: input.trim() && !isLoading
+                    ? '0 2px 14px rgba(124,58,237,0.45)'
+                    : 'none',
                 }}
               >
-                <Send size={14} style={{ color: input.trim() && !isLoading ? 'white' : 'var(--text-4)' }} />
+                <Send
+                  size={14}
+                  style={{ color: input.trim() && !isLoading ? 'white' : 'var(--text-4)' }}
+                />
               </motion.button>
             </div>
-            <p className="text-center text-[11px] mt-2" style={{ color: 'var(--text-4)' }}>
-              Entrée pour envoyer · Shift+Entrée pour sauter une ligne
+            <p className="text-center text-[10px] mt-2" style={{ color: 'var(--text-5)' }}>
+              Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
             </p>
           </div>
         )}
 
-        {/* ── Mobile tool bar (plan / cv / entretien) ── */}
+        {/* ── Mobile tools bar ── */}
         {hasResults && (
           <div
-            className="lg:hidden flex-shrink-0 px-4 py-3 flex gap-2"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            className="lg:hidden flex-shrink-0 px-4 py-3 flex gap-2 safe-bottom"
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(16px)',
+              background: 'rgba(5,5,15,0.8)',
+            }}
           >
             <button
               onClick={() => setPhase('cv')}
@@ -477,7 +605,7 @@ export default function CoachPage() {
                 color: phase === 'cv' ? '#fbbf24' : 'var(--text-3)',
               }}
             >
-              <FileText size={12} /> Analyser CV
+              <FileText size={13} /> Analyser CV
             </button>
             <button
               onClick={() => setPhase('entretien')}
@@ -488,7 +616,7 @@ export default function CoachPage() {
                 color: phase === 'entretien' ? '#34d399' : 'var(--text-3)',
               }}
             >
-              <Mic size={12} /> Entretien
+              <Mic size={13} /> Entretien
             </button>
           </div>
         )}

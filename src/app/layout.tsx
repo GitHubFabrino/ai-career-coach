@@ -1,13 +1,37 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+})
 
 export const metadata: Metadata = {
-  title: 'Coach Carrière IA — Découvre ta voie',
+  title: 'Coach Carrière IA — Découvre ta voie idéale',
   description:
-    'Une expérience de coaching carrière IA immersive qui aide les étudiants à trouver leur parcours professionnel idéal à Madagascar.',
+    'Un agent IA de coaching carrière qui analyse ton profil, détecte tes blocages, propose les meilleurs parcours et construit ta feuille de route — en 5 minutes. Gratuit, sans inscription.',
+  keywords: ['coach carrière', 'IA', 'Madagascar', 'parcours professionnel', 'CV', 'entretien', 'Claude AI'],
+  openGraph: {
+    title: 'Coach Carrière IA',
+    description: 'Découvre ta voie professionnelle idéale grâce à une IA de coaching personnalisée.',
+    type: 'website',
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#05050f',
 }
 
 export default function RootLayout({
@@ -16,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} h-full`}>
-      <body className="min-h-full" style={{ background: '#050510', color: '#e2e8f0' }}>
+    <html lang="fr" className={`${inter.variable} ${plusJakarta.variable} h-full`}>
+      <body className="min-h-full min-h-dvh" style={{ background: '#05050f', color: '#f1f5f9' }}>
         {children}
       </body>
     </html>
