@@ -4,11 +4,12 @@ import type {
   CareerSuggestion,
   ActionPlan,
   BlockerAnalysis,
+  JobMatch,
   Message,
   CoachingPhase,
 } from '@/types'
 
-type AppPhase = 'chat' | 'careers' | 'plan' | 'cv' | 'entretien'
+type AppPhase = 'chat' | 'careers' | 'plan' | 'cv' | 'entretien' | 'jobs'
 
 type CoachStore = {
   phase: CoachingPhase
@@ -19,6 +20,7 @@ type CoachStore = {
   selectedCareer: CareerSuggestion | null
   actionPlan: ActionPlan | null
   blockerAnalysis: BlockerAnalysis | null
+  jobMatches: JobMatch[]
   isAnalyzing: boolean
   questionIndex: number
 
@@ -30,6 +32,7 @@ type CoachStore = {
   selectCareer: (career: CareerSuggestion) => void
   setActionPlan: (plan: ActionPlan) => void
   setBlockerAnalysis: (analysis: BlockerAnalysis) => void
+  setJobMatches: (matches: JobMatch[]) => void
   setIsAnalyzing: (val: boolean) => void
   incrementQuestion: () => void
   reset: () => void
@@ -44,6 +47,7 @@ const initialState = {
   selectedCareer: null,
   actionPlan: null,
   blockerAnalysis: null,
+  jobMatches: [],
   isAnalyzing: false,
   questionIndex: 0,
 }
@@ -61,6 +65,7 @@ export const useCoachStore = create<CoachStore>((set) => ({
   selectCareer: (career) => set({ selectedCareer: career }),
   setActionPlan: (plan) => set({ actionPlan: plan }),
   setBlockerAnalysis: (analysis) => set({ blockerAnalysis: analysis }),
+  setJobMatches: (matches) => set({ jobMatches: matches }),
   setIsAnalyzing: (val) => set({ isAnalyzing: val }),
   incrementQuestion: () =>
     set((s) => ({ questionIndex: s.questionIndex + 1 })),

@@ -127,3 +127,27 @@ export type InterviewSession = {
   finalScore?: number
   finalFeedback?: string
 }
+
+export type JobOffer = {
+  titre: string
+  entreprise: string
+  type_contrat: string
+  lieu: string
+  secteur: string
+  date_publi: string
+  date_limite: string
+  extrait: string
+  experience: string
+  niveau_etude: string
+  salaire: string
+  contact: string
+  url_detail: string
+}
+
+export type JobMatch = {
+  offer: JobOffer
+  matchScore: number
+  matchReason: string
+  keySkillsRequired: string[]
+  applicationTips: string[]
+}

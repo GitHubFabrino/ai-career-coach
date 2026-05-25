@@ -1,4 +1,4 @@
-import type { UserProfile, CareerSuggestion, ActionPlan, SkillGap, BlockerAnalysis } from '@/types'
+import type { UserProfile, CareerSuggestion, ActionPlan, SkillGap, BlockerAnalysis, JobMatch } from '@/types'
 
 export type ToolName =
   | 'profile_analyzer'
@@ -6,6 +6,7 @@ export type ToolName =
   | 'career_matcher'
   | 'skill_gap_analyzer'
   | 'action_plan_generator'
+  | 'job_matcher'
 
 export type ToolInput = {
   profile_analyzer: { answers: Record<string, string>; full_conversation?: string }
@@ -18,6 +19,7 @@ export type ToolInput = {
     gaps: SkillGap[]
     blockers?: BlockerAnalysis
   }
+  job_matcher: { profile: UserProfile; careers?: CareerSuggestion[] }
 }
 
 export type ToolOutput = {
@@ -26,6 +28,7 @@ export type ToolOutput = {
   career_matcher: CareerSuggestion[]
   skill_gap_analyzer: SkillGap[]
   action_plan_generator: ActionPlan
+  job_matcher: JobMatch[]
 }
 
 export const TOOL_DEFINITIONS = [
@@ -112,6 +115,19 @@ export const TOOL_DEFINITIONS = [
         blockers: { type: 'object', description: 'L\'analyse des blocages pour personnaliser le coaching' },
       },
       required: ['profile', 'career', 'gaps'],
+    },
+  },
+  {
+    name: 'job_matcher',
+    description:
+      'Recherche dans les offres d\'emploi réelles de portaljob-madagascar.com et retourne les 5 meilleures offres correspondant au profil et aux carrières suggérées. À utiliser après career_matcher pour proposer des offres concrètes à postuler immédiatement.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        profile: { type: 'object', description: 'Le profil structuré de l\'utilisateur' },
+        careers: { type: 'array', description: 'Les suggestions de carrières retournées par career_matcher (optionnel, améliore la précision)' },
+      },
+      required: ['profile'],
     },
   },
 ]
